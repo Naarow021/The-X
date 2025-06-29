@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ویرایشگر HTML</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #333;
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* <<<< ساختار به حالت عمودی تغییر کرد >>>> */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr; /* یک ستون */
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .panel-title {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .editor-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #html-editor {
+            width: 100%;
+            height: 380px; /* ارتفاع ویرایشگر */
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            border: none;
+            resize: vertical;
+            outline: none;
+            background: #f8f9fa;
+            line-height: 1.5;
+            tab-size: 4;
+        }
+        
+        #html-preview {
+            width: 100%;
+            height: 650px; /* ارتفاع پیش‌نمایش */
+            border: none;
+            background: white;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-download { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .btn-upload { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .btn-reset { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .btn-auto { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .btn-tool { background: linear-gradient(135deg, #34495e, #2c3e50); padding: 8px 15px; }
+        
+        .auto-update {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            color: white;
+            font-size: 0.95rem;
+        }
+        
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 28px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #27ae60; }
+        input:checked + .slider:before { transform: translateX(22px); }
+        
+        .upload-container { position: relative; display: inline-block; }
+        #file-upload { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+
+        .filename-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; }
+        .filename-label { color: white; font-size: 1rem; }
+        .filename-input { padding: 10px 15px; border-radius: 50px; border: none; min-width: 250px; font-size: 1rem; box-shadow: 0 3px 8px rgba(0,0,0,0.2); text-align: center; }
+        .filename-input:focus { outline: none; box-shadow: 0 3px 12px rgba(0,0,0,0.3); }
+        
+        .save-section { background: rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 15px; margin-top: 20px; margin-bottom: 20px; }
+        .save-container { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        
+        .notification { position: fixed; top: 15px; right: 15px; padding: 12px 20px; background: #2ecc71; color: white; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); display: none; z-index: 1000; animation: slideIn 0.3s ease, fadeOut 0.5s ease 2.5s; }
+        @keyframes slideIn { from { right: -300px; opacity: 0; } to { right: 15px; opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        
+        .search-box { display: flex; align-items: center; background: white; border-radius: 50px; padding: 5px 8px 5px 15px; margin-top: 10px; width: 100%; max-width: 300px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        #search-input { flex: 1; border: none; padding: 8px; font-size: 14px; outline: none; background: transparent; }
+        .search-btn { background: #3498db; border: none; color: white; cursor: pointer; font-size: 14px; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+        .search-btn:hover { background: #2980b9; }
+        
+        .editor-tools { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="main-content">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="fas fa-edit"></i> ویرایشگر کد</h2>
+                </div>
+                
+                <div style="padding: 10px 15px; background: #ecf0f1; border-bottom: 1px solid #ddd;">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="جستجو در کد...">
+                        <button class="search-btn" onclick="searchCode()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="editor-tools">
+                        <button class="btn btn-tool" onclick="copyCode()"><i class="fas fa-copy"></i> کپی</button>
+                        <button class="btn btn-tool" onclick="pasteCode()"><i class="fas fa-paste"></i> پیست</button>
+                        <button class="btn btn-tool" onclick="clearSelected()"><i class="fas fa-eraser"></i> پاک کردن انتخاب</button>
+                        <button class="btn btn-tool" onclick="selectAllCode()"><i class="fas fa-vector-square"></i> انتخاب همه</button>
+                    </div>
+                </div>
+                
+                <div class="editor-container">
+                    <textarea id="html-editor" autofocus placeholder="کد HTML خود را اینجا وارد نمایید..."><!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>صفحه نمونه</title>
+    <style>
+        body { font-family: Tahoma; background: #f5f5f5; text-align: center; padding: 30px; }
+        h1 { color: #2c3e50; }
+        .box { background: white; border-radius: 8px; padding: 20px; margin: 15px auto; max-width: 500px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>سلام دنیا!</h1>
+        <p>به ویرایشگر HTML با پیش‌نمایش زنده خوش آمدید.</p>
+        <p>کدهای خود را ویرایش کنید و نتیجه را بلافاصله مشاهده نمایید.</p>
+    </div>
+</body>
+</html></textarea>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="fas fa-eye"></i> پیش‌نمایش</h2>
+                </div>
+                <iframe id="html-preview"></iframe>
+            </div>
+        </div>
+        
+        <div class="save-section">
+            <div class="save-container">
+                <div class="filename-container">
+                    <span class="filename-label">نام فایل:</span>
+                    <input type="text" id="filename-input" class="filename-input" placeholder="نام فایل را وارد کنید..." value="my-page">
+                    <span class="filename-label">.html</span>
+                </div>
+                <button class="btn btn-download" onclick="downloadHTML()">
+                    <i class="fas fa-download"></i> ذخیره فایل
+                </button>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <div class="upload-container">
+                <button class="btn btn-upload"><i class="fas fa-upload"></i> آپلود فایل<input type="file" id="file-upload" accept=".html,.htm"></button>
+            </div>
+            <button class="btn btn-auto" onclick="updatePreview()"><i class="fas fa-sync-alt"></i> بروزرسانی دستی</button>
+            <button class="btn btn-reset" onclick="resetEditor()"><i class="fas fa-redo"></i> بازنشانی</button>
+        </div>
+        
+        <div class="auto-update">
+            <span>به‌روزرسانی خودکار:</span>
+            <label class="switch">
+                <input type="checkbox" id="auto-update" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i> <span id="notification-text"></span>
+    </div>
+    
+    <script>
+        // Elements
+        const editor = document.getElementById('html-editor');
+        const preview = document.getElementById('html-preview');
+        const autoUpdateToggle = document.getElementById('auto-update');
+        const fileUpload = document.getElementById('file-upload');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notification-text');
+        const filenameInput = document.getElementById('filename-input');
+        const searchInput = document.getElementById('search-input');
+        
+        updatePreview();
+        
+        let autoUpdateEnabled = true;
+        let updateTimeout;
+        let lastSearchIndex = 0;
+        
+        autoUpdateToggle.addEventListener('change', (e) => autoUpdateEnabled = e.target.checked);
+        
+        editor.addEventListener('input', () => {
+            if (autoUpdateEnabled) {
+                clearTimeout(updateTimeout);
+                updateTimeout = setTimeout(updatePreview, 300);
+            }
+        });
+
+        searchInput.addEventListener('input', () => lastSearchIndex = 0);
+        searchInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') searchCode(); });
+        
+        function updatePreview() {
+            preview.srcdoc = editor.value;
+        }
+        
+        function downloadHTML() {
+            let filename = filenameInput.value.trim() || 'my-page';
+            filenameInput.value = filename;
+            if (!filename.endsWith('.html')) filename += '.html';
+            
+            const blob = new Blob([editor.value], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification(`فایل "${filename}" با موفقیت ذخیره شد!`);
+        }
+        
+        function resetEditor() {
+            if (confirm('آیا مطمئنید؟ کد شما با نمونه اولیه جایگزین خواهد شد.')) {
+                editor.value = `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>صفحه نمونه</title>
+    <style>
+        body { font-family: Tahoma; background: #f5f5f5; text-align: center; padding: 30px; }
+        h1 { color: #2c3e50; }
+        .box { background: white; border-radius: 8px; padding: 20px; margin: 15px auto; max-width: 500px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>سلام دنیا!</h1>
+        <p>به ویرایشگر HTML با پیش‌نمایش زنده خوش آمدید.</p>
+        <p>کدهای خود را ویرایش کنید و نتیجه را بلافاصله مشاهده نمایید.</p>
+    </div>
+</body>
+</html>`;
+                updatePreview();
+                filenameInput.value = 'my-page';
+                showNotification('ویرایشگر با موفقیت بازنشانی شد');
+            }
+        }
+        
+        fileUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.name.match(/\.(html|htm)$/i)) {
+                showNotification('لطفاً فقط فایل‌های HTML آپلود کنید', true);
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                editor.value = event.target.result;
+                updatePreview();
+                filenameInput.value = file.name.replace(/\.[^/.]+$/, "");
+                showNotification('فایل با موفقیت بارگذاری شد');
+            };
+            reader.onerror = () => showNotification('خطا در خواندن فایل', true);
+            reader.readAsText(file);
+        });
+        
+        function showNotification(message, isError = false) {
+            notificationText.textContent = message;
+            notification.style.background = isError ? '#e74c3c' : '#2ecc71';
+            notification.style.display = 'flex';
+            notification.style.animation = 'none';
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease, fadeOut 0.5s ease 2.5s';
+                setTimeout(() => notification.style.display = 'none', 3000);
+            }, 10);
+        }
+        
+        function searchCode() {
+            const query = searchInput.value;
+            if (!query) return;
+            
+            const content = editor.value;
+            const position = content.toLowerCase().indexOf(query.toLowerCase(), lastSearchIndex);
+            
+            if (position !== -1) {
+                editor.focus();
+                editor.setSelectionRange(position, position + query.length);
+                lastSearchIndex = position + 1;
+            } else {
+                lastSearchIndex = 0;
+                showNotification(`عبارت "${query}" پیدا نشد.`, true);
+            }
+        }
+        
+        function copyCode() {
+            if (!editor.value) return;
+            navigator.clipboard.writeText(editor.value).then(() => {
+                showNotification('کل کد در کلیپ‌بورد کپی شد');
+            }).catch(() => showNotification('خطا در کپی کردن', true));
+        }
+        
+        function pasteCode() {
+            navigator.clipboard.readText().then(text => {
+                if (!text) return;
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                editor.value = editor.value.substring(0, start) + text + editor.value.substring(end);
+                editor.selectionStart = editor.selectionEnd = start + text.length;
+                updatePreview();
+                editor.focus();
+                showNotification('متن از کلیپ‌بورد پیست شد');
+            }).catch(() => showNotification('خطا در خواندن از کلیپ‌بورد', true));
+        }
+        
+        function clearSelected() {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            if (start === end) return;
+            
+            editor.value = editor.value.substring(0, start) + editor.value.substring(end);
+            editor.selectionStart = editor.selectionEnd = start;
+            updatePreview();
+            editor.focus();
+            showNotification('متن انتخاب شده پاک شد');
+        }
+        
+        function selectAllCode() {
+            editor.select();
+            editor.focus();
+        }
+    </script>
+</body>
+</html>
