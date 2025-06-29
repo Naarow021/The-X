@@ -1,1 +1,439 @@
 
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>یادداشت‌های تعاملی پیشرفته</title>
+    <style>
+        /* وارد کردن فونت وزیرمتن برای ظاهر بهتر */
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600&display=swap');
+
+        /* تعریف متغیرهای رنگ و سایه برای استفاده آسان */
+        :root {
+            --primary-shadow: rgba(0, 0, 0, 0.1);
+            --secondary-shadow: rgba(0, 0, 0, 0.2);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glow-color: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* انیمیشن گرادیان پس‌زمینه */
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient-animation 20s ease infinite;
+            font-family: 'Vazirmatn', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        /* کانتینر اصلی با افکت شیشه‌ای */
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--glass-bg);
+            border-radius: 25px;
+            padding: 25px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 15px 40px var(--primary-shadow);
+            position: relative;
+        }
+        
+        /* هدر برنامه */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            color: white;
+            padding: 0 10px;
+        }
+
+        .app-header h1 {
+            font-size: 1.8rem;
+            text-shadow: 0 2px 5px var(--secondary-shadow);
+        }
+
+        .clear-all-btn {
+            background: rgba(231, 76, 60, 0.6);
+            border: 1px solid rgba(231, 76, 60, 0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-all-btn:hover {
+            background: rgba(231, 76, 60, 0.8);
+            transform: translateY(-2px);
+        }
+
+        /* کانتینر گرید با افکت پرسپکتیو */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+            perspective: 1500px; /* برای افکت سه‌بعدی */
+        }
+
+        /* انیمیشن برای بارگذاری اولیه کارت‌ها */
+        @keyframes card-load-animation {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* استایل هر کارت با قابلیت افکت سه‌بعدی */
+        .grid-item {
+            aspect-ratio: 1 / 1; /* مربع نگه داشتن کارت‌ها */
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 25px var(--primary-shadow);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            opacity: 0;
+            animation: card-load-animation 0.5s forwards;
+        }
+        
+        /* ایجاد تاخیر در انیمیشن هر کارت برای ظاهر زیباتر */
+        .grid-item:nth-child(1) { animation-delay: 0.05s; }
+        .grid-item:nth-child(2) { animation-delay: 0.1s; }
+        .grid-item:nth-child(3) { animation-delay: 0.15s; }
+        .grid-item:nth-child(4) { animation-delay: 0.2s; }
+        /* ... و ادامه برای بقیه کارت‌ها */
+        .grid-item:nth-child(5) { animation-delay: 0.1s; }
+        .grid-item:nth-child(6) { animation-delay: 0.15s; }
+        .grid-item:nth-child(7) { animation-delay: 0.2s; }
+        .grid-item:nth-child(8) { animation-delay: 0.25s; }
+        .grid-item:nth-child(9) { animation-delay: 0.15s; }
+        .grid-item:nth-child(10) { animation-delay: 0.2s; }
+        .grid-item:nth-child(11) { animation-delay: 0.25s; }
+        .grid-item:nth-child(12) { animation-delay: 0.3s; }
+
+
+        .grid-item:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 18px 40px var(--secondary-shadow);
+        }
+
+        .note {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .note p {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        
+        /* تعریف کلاس‌های رنگ با گرادیان‌های زیبا */
+        .color-pink { background: linear-gradient(135deg, #ff85c0 0%, #ff6b9d 100%); }
+        .color-yellow-green { background: linear-gradient(135deg, #fff275 0%, #a8e6cf 100%); }
+        .color-dark-blue { background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); color: #ecf0f1; }
+        .color-light-green { background: linear-gradient(135deg, #a8e6cf 0%, #88d8a3 100%); }
+        .color-purple { background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%); color: #ecf0f1; }
+        .color-orange { background: linear-gradient(135deg, #ff9a56 0%, #ff7f39 100%); }
+        .color-yellow { background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%); }
+        .color-pale-green { background: linear-gradient(135deg, #d4e09b 0%, #c8d982 100%); }
+        .color-dark-green { background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%); color: #ecf0f1; }
+        .color-red { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); }
+        .color-cyan { background: linear-gradient(135deg, #4dd0e1 0%, #26c6da 100%); }
+        .color-light-blue { background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%); }
+        .color-deep-teal { background: linear-gradient(135deg, #00695c 0%, #00796b 100%); color: #ecf0f1; }
+        .color-mint { background: linear-gradient(135deg, #00b894 0%, #00a085 100%); color: #ecf0f1; }
+        .color-lavender { background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); color: #ecf0f1; }
+        
+        /* مودال پیشرفته (پنجره ویرایش) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        @keyframes modal-appear {
+            from {
+                transform: scale(0.8) rotate(-5deg);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 550px;
+            aspect-ratio: 1 / 1;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 25px 60px var(--secondary-shadow);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: all 0.4s ease;
+            transform: scale(0.7);
+        }
+        
+        .modal-overlay.active .modal-content {
+            animation: modal-appear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        
+        .modal-textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 1.2rem;
+            color: #2c3e50;
+            resize: none;
+            padding: 20px;
+            border-radius: 15px;
+            line-height: 1.6;
+        }
+
+        .modal-textarea:focus {
+            outline: 2px solid rgba(255,255,255,0.5);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+            z-index: 1001;
+        }
+
+        .close-button:hover {
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        /* ریسپانسیو کردن برای موبایل */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .app-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <header class="app-header">
+            <h1>یادداشت‌های من</h1>
+            <button class="clear-all-btn" id="clearAllBtn">پاک کردن همه</button>
+        </header>
+        <div class="grid-container" id="gridContainer">
+            <!-- کارت‌ها توسط جاوااسکریپت ساخته می‌شوند -->
+        </div>
+    </div>
+
+    <!-- مودال -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content" id="modalContent">
+            <button class="close-button" id="closeButton">&times;</button>
+            <textarea class="modal-textarea" id="modalTextarea" placeholder="یادداشت خود را اینجا بنویسید..."></textarea>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // المان‌های اصلی
+            const gridContainer = document.getElementById('gridContainer');
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalContent = document.getElementById('modalContent');
+            const modalTextarea = document.getElementById('modalTextarea');
+            const closeButton = document.getElementById('closeButton');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            
+            // متغیرهای وضعیت
+            let currentEditingItem = null;
+
+            // لیست رنگ‌ها و یادداشت‌های پیش‌فرض
+            const cardData = [
+                { color: 'color-pink', text: '' },
+                { color: 'color-yellow-green', text: 'پروژه جدید را شروع کن' },
+                { color: 'color-pink', text: '' },
+                { color: 'color-light-blue', text: 'تماس با دوست' },
+                { color: 'color-light-green', text: '' },
+                { color: 'color-purple', text: 'یادگیری جاوااسکریپت' },
+                { color: 'color-orange', text: 'هدف بعدی!' },
+                { color: 'color-dark-blue', text: 'یک ایده مخفی' },
+                { color: 'color-pale-green', text: 'انجام شد ✓' },
+                { color: 'color-dark-green', text: '' },
+                { color: 'color-red', text: 'مهم و فوری' },
+                { color: 'color-cyan', text: '' },
+                { color: 'color-mint', text: '' },
+                { color: 'color-deep-teal', text: '' },
+                { color: 'color-lavender', text: '' },
+                { color: 'color-yellow', text: 'خرید هفتگی' },
+            ];
+            
+            // تابع برای ساختن کارت‌ها
+            function createCards() {
+                gridContainer.innerHTML = ''; // خالی کردن گرید قبل از ساخت
+                cardData.forEach((data, index) => {
+                    const savedText = localStorage.getItem(`note-${index}`) ?? data.text;
+
+                    const gridItem = document.createElement('div');
+                    gridItem.className = 'grid-item';
+                    gridItem.dataset.index = index;
+                    gridItem.dataset.colorClass = data.color;
+
+                    const note = document.createElement('div');
+                    note.className = `note ${data.color}`;
+                    
+                    const noteText = document.createElement('p');
+                    noteText.textContent = savedText;
+                    
+                    note.appendChild(noteText);
+                    gridItem.appendChild(note);
+                    gridContainer.appendChild(gridItem);
+
+                    // افزودن رویداد کلیک برای باز کردن مودال
+                    gridItem.addEventListener('click', () => openModal(gridItem));
+                });
+            }
+
+            // تابع برای باز کردن مودال
+            function openModal(item) {
+                currentEditingItem = item;
+                const index = item.dataset.index;
+                const colorClass = item.dataset.colorClass;
+                const text = item.querySelector('p').textContent;
+
+                modalContent.className = `modal-content ${colorClass}`;
+                modalTextarea.value = text;
+                modalTextarea.style.color = window.getComputedStyle(item.querySelector('.note')).color;
+
+                modalOverlay.classList.add('active');
+                setTimeout(() => modalTextarea.focus(), 100);
+            }
+
+            // تابع برای بستن مودال و ذخیره متن
+            function closeModal() {
+                if (currentEditingItem) {
+                    const index = currentEditingItem.dataset.index;
+                    const newText = modalTextarea.value;
+                    
+                    // آپدیت متن روی کارت
+                    currentEditingItem.querySelector('p').textContent = newText;
+                    
+                    // ذخیره در localStorage
+                    localStorage.setItem(`note-${index}`, newText);
+                }
+                modalOverlay.classList.remove('active');
+                currentEditingItem = null;
+            }
+            
+            // تابع پاک کردن همه یادداشت‌ها
+            function clearAllNotes() {
+                if (confirm('آیا از پاک کردن تمام یادداشت‌ها مطمئن هستید؟ این عمل غیرقابل بازگشت است.')) {
+                    localStorage.clear();
+                    createCards(); // بازسازی کارت‌ها با متن پیش‌فرض
+                }
+            }
+
+            // افکت سه بعدی حرکت موس
+            gridContainer.addEventListener('mousemove', e => {
+                for (const card of gridContainer.children) {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const rotateX = -1 * ((y - rect.height / 2) / 10);
+                    const rotateY = (x - rect.width / 2) / 10;
+                    
+                    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                }
+            });
+            
+            // بازگرداندن کارت به حالت اولیه هنگام خروج موس
+            gridContainer.addEventListener('mouseleave', () => {
+                 for (const card of gridContainer.children) {
+                    card.style.transform = '';
+                 }
+            });
+
+            // رویدادها
+            closeButton.addEventListener('click', closeModal);
+            clearAllBtn.addEventListener('click', clearAllNotes);
+            modalOverlay.addEventListener('click', e => (e.target === modalOverlay) && closeModal());
+            document.addEventListener('keydown', e => (e.key === 'Escape') && closeModal());
+            
+            // ساخت اولیه کارت‌ها
+            createCards();
+        });
+    </script>
+</body>
+</html>
+
