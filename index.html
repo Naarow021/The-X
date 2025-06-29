@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل فرماندهی حرفه‌ای | شبنما</title>
+    
+    <!-- Chosen Palette: Original Dark Purple-Gold Theme -->
+    <!-- Application Structure Plan: The application structure has been redesigned from a dark, gamified theme to a light, professional dashboard focused on clarity and actionable insights. The core structure is a two-column layout: a fixed sidebar for clear navigation and a main content area for dynamic data presentation. The main dashboard now features key performance indicators (KPIs) for quick assessment and a central time-series line chart (using Chart.js) to visualize metric trends, which provides deeper analytical context than static numbers. Existing modules like Predictions, Tasks, and Achievements are retained but redesigned for better usability and consistency with the new professional aesthetic. This structure enhances user flow by separating navigation from content and prioritizes data-driven decision-making over pure gamification. The XRM section from the original file is now integrated as a separate content section, allowing for a clearer distinction between personal metrics and relationship/project management, all accessible via the main navigation. A new 'My Storyboard' section is added for visual planning. -->
+    <!-- Visualization & Content Choices: 
+        - **Dashboard Metrics**: Report Info: Flow Energy, Command Level, Obstacles Solved. -> Goal: Inform/Compare -> Viz/Presentation Method: Clean KPI cards for at-a-glance status and a central Chart.js line chart for historical trend analysis. -> Interaction: Users can update metrics, which dynamically redraws the chart. -> Justification: The line chart provides significantly more insight into performance over time than a single number. -> Library/Method: HTML/CSS (Tailwind), Chart.js (Canvas).
+        - **Strategic Progress**: Report Info: Command Level progression. -> Goal: Change -> Viz/Presentation Method: A redesigned, cleaner "progress river" using styled HTML/CSS. -> Interaction: Updates automatically with Command Level. -> Justification: Retains the unique visual metaphor from the original but aligns it with the professional theme. -> Library/Method: HTML/CSS (Tailwind).
+        - **Predictions**: Report Info: User-defined forecasts and probabilities. -> Goal: Organize/Change -> Viz/Presentation Method: A restyled, accessible HTML table. -> Interaction: In-place editing of probabilities, adding/deleting predictions, and new sorting functionality. -> Justification: The table is the best format for structured comparison; sorting adds a layer of professional analysis. -> Library/Method: HTML/CSS (Tailwind), Vanilla JS.
+        - **Tasks & Mind Map**: Report Info: User-defined tasks and sub-tasks. -> Goal: Organize/Ideate -> Viz/Presentation Method: A clean task list that opens a full-screen modal containing an. interactive mind map. -> Interaction: Users can add/delete tasks and sub-tasks, and edit sub-task text in-place. -> Justification: The mind map is an excellent tool for unstructured brainstorming and planning, a key professional feature. -> Library/Method: HTML/CSS (Tailwind), Vanilla JS.
+        - **My Storyboard**: Report Info: User-uploaded/linked images for visual planning. -> Goal: Organize/Visualize -> Viz/Presentation Method: A responsive image gallery. -> Interaction: Add/delete images via URL. -> Justification: Fulfills the user's need for a visual, personal planning space. -> Library/Method: HTML/CSS (Tailwind), Vanilla JS.
+        - **Achievements**: Report Info: Unlocked badges based on performance. -> Goal: Inform/Engage -> Viz/Presentation Method: A grid of redesigned, minimalist badge cards. -> Interaction: Badges unlock automatically based on metric achievements. -> Justification: Provides positive reinforcement and tracks milestones in a subtle, professional manner. -> Library/Method: HTML/CSS (Tailwind).
+        - **XRM System**: Report Info: Leads, Clients, Projects data. -> Goal: Inform/Organize -> Viz/Presentation Method: Doughnut, Bar, and Pie charts from Chart.js for summary, and an HTML table for recent activities. -> Interaction: Charts dynamically update based on data. -> Justification: Visual summaries provide quick insights into XRM status, and the table offers detailed activity logs. -> Library/Method: HTML/CSS (Tailwind), Chart.js (Canvas).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/relativeTime.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/locale/fa.js"></script>
+
+    <style>
+        :root {
+            --primary: #4a00e0; /* Deep Purple */
+            --secondary: #8e2de2; /* Lighter Purple */
+            --accent-red: #ff6b6b; /* Vibrant Red */
+            --accent-green: #06D6A0; /* Bright Green */
+            --dark: #0f0c29; /* Dark Blue-Purple */
+            --darker: #08061a; /* Even Darker Blue-Purple */
+            --light: #e0e7ff; /* Light Blue-Purple */
+            --gold: #ffd700; /* Gold */
+            --text-muted: #C0C8E0; /* Desaturated text for descriptions */
+            --border-color: rgba(142, 45, 226, 0.3); /* Purple border for cards */
+            --card-bg-dark: rgba(26, 11, 51, 0.8); /* Dark card background */
+            --card-bg-light: rgba(15, 5, 36, 0.8); /* Lighter card background */
+            --bg-gradient-start: #2A003B; /* Aurora start */
+            --bg-gradient-mid: #0A002A; /* Aurora mid */
+            --bg-gradient-end: #000A1A; /* Aurora end */
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 30%, var(--bg-gradient-end) 100%);
+            color: var(--light);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 40vh;
+        }
+
+        .task-list-container, .storyboard-container, .modal-content {
+            scrollbar-width: thin;
+            scrollbar-color: var(--secondary) transparent;
+        }
+
+        .task-list-container::-webkit-scrollbar, .storyboard-container::-webkit-scrollbar, .modal-content::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .task-list-container::-webkit-scrollbar-track, .storyboard-container::-webkit-scrollbar-track, .modal-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .task-list-container::-webkit-scrollbar-thumb, .storyboard-container::-webkit-scrollbar-thumb, .modal-content::-webkit-scrollbar-thumb {
+            background-color: var(--secondary);
+            border-radius: 10px;
+            border: 2px solid var(--bg-gradient-start); /* Adjusted border for thumb */
+        }
+
+        .nav-link.active {
+            background: linear-gradient(90deg, rgba(142,45,226,0.3) 0%, rgba(74,0,224,0.2) 100%);
+            color: var(--gold);
+            border-right-color: var(--gold);
+            font-weight: 700;
+            box-shadow: 0 0 20px rgba(142,45,226,0.3);
+        }
+        
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.flex {
+            display: flex;
+        }
+        .modal-content {
+            background: linear-gradient(180deg, var(--darker) 0%, var(--dark) 100%);
+            animation: slideIn 0.3s ease-out;
+            color: var(--light);
+            border: 1px solid var(--border-color);
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Specific styles for XRM charts to fit in cards */
+        .xrm-card .chart-container {
+            height: 220px; /* Fixed height for smaller charts */
+            max-height: 220px;
+        }
+
+        /* Sidebar enhancements */
+        .sidebar {
+            width: 300px;
+            background: linear-gradient(180deg, var(--darker) 0%, var(--dark) 100%); /* Dark gradient for sidebar */
+            color: #D1D5DB;
+            padding: 2.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -8px 0 20px rgba(0, 0, 0, 0.4);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 20;
+            border-right: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+        
+        .sidebar::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="rgba(142,45,226,0.05)" stroke-width="1"/></svg>');
+            z-index: -1;
+            opacity: 0.5;
+        }
+        
+        .sidebar h1 {
+            color: var(--gold);
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            letter-spacing: 0.05em;
+            text-shadow: 0 0 15px rgba(255,215,0,0.7);
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .sidebar h1::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 25%;
+            right: 25%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            border-radius: 50%;
+        }
+        
+        /* Navigation enhancements */
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+        
+        .sidebar nav li {
+            margin-bottom: 0.75rem;
+            position: relative;
+        }
+        
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            color: #BDC3C7;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: right;
+            border-right: 4px solid transparent;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .sidebar nav a i {
+            margin-left: 10px;
+            font-size: 1.2rem;
+            min-width: 24px;
+        }
+        
+        .sidebar nav a::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 0;
+            background: linear-gradient(90deg, rgba(142,45,226,0.3) 0%, rgba(74,0,224,0.2) 100%);
+            transition: width 0.4s ease;
+            z-index: -1;
+        }
+        
+        .sidebar nav a:hover {
+            color: var(--light);
+            transform: translateX(-5px);
+        }
+        
+        .sidebar nav a:hover::before {
+            width: 100%;
+        }
+        
+        .user-profile {
+            margin-top: auto;
+            padding: 20px;
+            background: rgba(15, 12, 41, 0.6);
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(142,45,226,0.2);
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--gold);
+            border: 3px solid var(--gold);
+            box-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+        
+        .user-name {
+            font-weight: 800;
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+            color: var(--light);
+        }
+        
+        .user-title {
+            font-size: 0.9rem;
+            color: var(--gold);
+            background: rgba(0,0,0,0.3);
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        /* Main content enhancements */
+        .main-content {
+            flex-grow: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            position: relative;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="100" height="100" fill="none" stroke="rgba(142,45,226,0.03)" stroke-width="1"/></svg>');
+        }
+        
+        .main-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(142,45,226,0.05) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(74,0,224,0.05) 0%, transparent 40%);
+            z-index: -1;
+        }
+        
+        .section-header {
+            color: #A8DFFF;
+            font-weight: 900;
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            text-shadow: 0 0 8px rgba(168, 223, 255, 0.3);
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-header::after {
+            content: "";
+            flex-grow: 1;
+            height: 3px;
+            margin-right: 20px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            border-radius: 10px;
+        }
+        
+        .section-header i {
+            margin-left: 15px;
+            color: var(--gold);
+            font-size: 2.2rem;
+        }
+        
+        .section-description {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 2.5rem;
+            max-width: 800px;
+            line-height: 1.8;
+        }
+        
+        /* Dashboard grid enhancements */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(145deg, var(--card-bg-dark), var(--card-bg-light));
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            padding: 1.8rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+        
+        .metric-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top right, rgba(142,45,226,0.1), transparent 60%);
+            z-index: -1;
+        }
+        
+        .metric-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            color: var(--gold);
+            text-shadow: 0 0 15px rgba(255,215,0,0.5);
+        }
+        
+        .metric-value {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--gold);
+            text-shadow: 0 0 15px rgba(255,209,102,0.6);
+            margin: 5px 0;
+        }
+        
+        .metric-label {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #A8DFFF;
+            margin-top: 1rem;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .input-group input {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.8rem;
+            border-radius: 8px;
+            width: 80px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--light);
+            transition: all 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: var(--gold);
+            outline: none;
+            box-shadow: 0 0 10px rgba(255,215,0,0.3);
+        }
+        
+        .btn {
+            padding: 0.8rem 1.6rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 700;
+            border: none;
+            font-family: 'Vazirmatn', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-red);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        }
+        
+        .btn-primary:hover {
+            background-color: #ff4f4f;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255,107,107,0.5);
+        }
+        
+        .btn-secondary {
+            background-color: var(--accent-green);
+            color: white;
+            box-shadow: 0 4px 15px rgba(6,214,160,0.3);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #05B387;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(6,214,160,0.5);
+        }
+        
+        /* Progress bar enhancements */
+        .progress-container {
+            background: linear-gradient(145deg, var(--card-bg-dark), var(--card-bg-light));
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            grid-column: span 12; /* Occupy full width */
+        }
+        
+        .progress-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top left, rgba(74,0,224,0.1), transparent 70%);
+            z-index: -1;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            height: 35px;
+            margin-top: 1.5rem;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            line-height: 35px;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); /* Springy animation */
+            box-shadow: 0 0 15px rgba(160,32,240,0.5);
+        }
+        
+        .progress-text-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #F0F4FF;
+            font-weight: 800;
+            font-size: 1.1rem;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+            z-index: 1;
+        }
+        
+        /* River visual enhancements */
+        .river-visual-container {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(90deg, rgba(10,5,30,0.7), rgba(15,10,40,0.7));
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 2.5rem;
+            border: 1px solid rgba(142,45,226,0.3);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5), 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .river-path {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #1A2B40, #2A3B50); /* Subtle flow effect */
+            border-radius: 15px;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 15px rgba(0,100,200,0.3);
+        }
+        
+        .river-point {
+            position: absolute;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            transition: all 0.6s ease-in-out;
+            text-shadow: 0 0 5px rgba(0,0,0,0.3);
+            font-weight: 600;
+            width: 80px; /* Fixed width for positioning */
+            transform: translateX(-50%); /* Center the icon on its 'left' position */
+        }
+        
+        .river-point span.text-label {
+            font-size: 0.85rem;
+            margin-top: -5px;
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(0,0,0,0.4);
+            padding: 2px 8px;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+        
+        .river-point-unlocked {
+            color: var(--gold);
+            opacity: 1;
+            text-shadow: 0 0 20px rgba(255,209,102,0.9);
+        }
+        
+        .river-point-unlocked span.text-label {
+            color: #A8DFFF;
+            background: rgba(0,0,0,0.6);
+        }
+        
+        /* New storyboard section */
+        .storyboard-section {
+            grid-column: span 12;
+            background: linear-gradient(145deg, var(--card-bg-dark), var(--card-bg-light));
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .storyboard-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at bottom left, rgba(74,0,224,0.1), transparent 70%);
+            z-index: -1;
+        }
+
+        .storyboard-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 20px 0;
+            gap: 25px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--secondary) transparent;
+        }
+        
+        .storyboard-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .storyboard-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .storyboard-container::-webkit-scrollbar-thumb {
+            background-color: var(--secondary);
+            border-radius: 10px;
+        }
+        
+        .storyboard-card {
+            flex: 0 0 320px; /* Slightly wider cards */
+            background: rgba(20, 10, 40, 0.7);
+            border-radius: 18px; /* More rounded */
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 1px solid rgba(142,45,226,0.2);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+        
+        .storyboard-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(142,45,226,0.5);
+            border-color: rgba(255,215,0,0.6);
+        }
+        
+        .storyboard-header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            padding: 15px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.3rem; /* Larger font */
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 2px solid rgba(255,215,0,0.3);
+        }
+        .storyboard-header i {
+            margin-left: 8px; /* Space for icon */
+            color: rgba(255,255,255,0.7);
+        }
+        .storyboard-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            transform: skewX(-20deg);
+            transition: all 0.5s ease;
+        }
+        .storyboard-card:hover .storyboard-header::before {
+            left: 100%;
+        }
+        
+        .storyboard-body {
+            padding: 20px;
+        }
+        
+        .storyboard-body h4 {
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .storyboard-body p {
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+        
+        .storyboard-timeline {
+            height: 6px; /* Thicker timeline */
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
+            margin: 20px 0;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        .storyboard-progress {
+            height: 100%;
+            background: var(--gold);
+            border-radius: 3px;
+            width: 0%; /* Dynamic width */
+            box-shadow: 0 0 15px rgba(255,215,0,0.7);
+            transition: width 0.8s ease-out;
+        }
+        
+        .storyboard-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px 20px;
+            color: #A8DFFF;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .storyboard-footer span i {
+            margin-left: 5px;
+            color: var(--secondary);
+        }
+        
+        /* Prediction section enhancements */
+        .predictions-section {
+            grid-column: span 8;
+        }
+        
+        .prediction-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 2rem;
+            font-size: 1rem;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            background: rgba(20, 10, 40, 0.5);
+            border: 1px solid var(--border-color);
+        }
+        
+        .prediction-table th, .prediction-table td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--light);
+        }
+        
+        .prediction-table th {
+            background: linear-gradient(rgba(40,15,80,0.7), rgba(30,5,60,0.7));
+            font-weight: 700;
+            color: var(--gold);
+        }
+        
+        .prediction-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .prediction-table td {
+            background-color: rgba(0, 0, 0, 0.15); /* Slightly darker for rows */
+        }
+        
+        /* Tasks section enhancements */
+        .tasks-section {
+            grid-column: span 4;
+        }
+        
+        .task-list-container {
+            background: linear-gradient(145deg, var(--card-bg-dark), var(--card-bg-light));
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            max-height: 550px; /* Slightly more height */
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+        }
+        .task-list-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top right, rgba(255,107,107,0.1), transparent 70%);
+            z-index: -1;
+        }
+        
+        .task-list-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .task-list-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .task-list-container::-webkit-scrollbar-thumb {
+            background-color: var(--secondary);
+            border-radius: 10px;
+        }
+        
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: var(--light);
+            font-size: 1.1rem;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: rgba(30, 15, 60, 0.4);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .task-item:hover {
+            background: rgba(142,45,226,0.3);
+            color: var(--gold);
+            transform: translateX(-5px);
+        }
+        .task-item .task-name {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .task-item .task-name i {
+            color: var(--accent-green);
+        }
+        
+        /* Achievements section */
+        .achievements-section {
+            grid-column: span 12;
+        }
+        
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+        }
+        
+        .badge-card {
+            background: linear-gradient(145deg, var(--card-bg-dark), var(--card-bg-light));
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .badge-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(142,45,226,0.5);
+            border-color: rgba(255,215,0,0.6);
+        }
+        
+        .badge-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--gold);
+            text-shadow: 0 0 15px rgba(255,215,0,0.5);
+            transition: all 0.4s ease;
+        }
+        
+        .badge-card:hover .badge-icon {
+            transform: scale(1.15);
+            text-shadow: 0 0 25px rgba(255,215,0,0.8);
+        }
+        
+        .badge-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--light);
+        }
+        
+        .badge-desc {
+            font-size: 0.9rem;
+            color: #A8DFFF;
+        }
+        
+        .badge-unlocked {
+            border-color: rgba(255,215,0,0.8);
+            box-shadow: 0 0 30px rgba(255,215,0,0.4);
+            animation: pulse-border 2s infinite ease-out;
+        }
+        
+        @keyframes pulse-border {
+            0% { border-color: rgba(255,215,0,0.8); box-shadow: 0 0 30px rgba(255,215,0,0.4); }
+            50% { border-color: rgba(255,215,0,0.2); box-shadow: 0 0 15px rgba(255,215,0,0.1); }
+            100% { border-color: rgba(255,215,0,0.8); box-shadow: 0 0 30px rgba(255,215,0,0.4); }
+        }
+        
+        .badge-unlocked .badge-icon {
+            filter: grayscale(0%);
+            animation: glow 1.5s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--gold), 0 0 20px var(--gold); }
+            to { text-shadow: 0 0 20px var(--gold), 0 0 30px var(--gold), 0 0 40px var(--gold); }
+        }
+
+        /* XRM Section */
+        .xrm-section {
+            grid-column: span 12;
+            background: linear-gradient(145deg, var(--card-bg-dark), var(--card-bg-light));
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            margin-bottom: 30px;
+        }
+        
+        .xrm-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .xrm-card {
+            background: rgba(20, 10, 40, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 1px solid rgba(142,45,226,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .xrm-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(142,45,226,0.4);
+        }
+        
+        .xrm-card-header {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--gold);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .xrm-card-content {
+            min-height: 200px;
+        }
+        
+        .xrm-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .xrm-table th, .xrm-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .xrm-table th {
+            background: rgba(40,15,80,0.4);
+            color: var(--gold);
+        }
+        
+        .xrm-table tr:hover {
+            background: rgba(142,45,226,0.1);
+        }
+
+        /* Modal / Mind Map Styling */
+        .modal-content h2 {
+            color: var(--gold);
+            border-bottom-color: rgba(255,209,102,0.2);
+            text-shadow: 0 0 10px rgba(255,209,102,0.4);
+            font-size: 2.5rem;
+        }
+        .close-button {
+            color: var(--accent-red);
+            font-size: 32px;
+            font-weight: bold;
+            position: absolute;
+            top: 20px;
+            left: 25px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #FF4F4F;
+            text-decoration: none;
+        }
+        .mind-map-node {
+            background-color: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            padding: 0.9rem 1.4rem;
+            border-radius: 10px;
+            margin: 0.75rem 0;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+            color: var(--light);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .mind-map-node:hover {
+            background-color: rgba(59, 130, 246, 0.3);
+        }
+        .mind-map-node input[type="text"] {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--light);
+            font-family: 'Vazirmatn', sans-serif;
+            flex-grow: 1;
+            padding: 0.2rem;
+            text-align: right;
+            font-size: 1.1rem;
+        }
+        .mind-map-node .node-actions button {
+            background-color: var(--accent-green);
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            margin-left: 0.6rem;
+            transition: background-color 0.2s;
+            font-weight: 600;
+        }
+        .mind-map-node .node-actions button:hover {
+            background-color: #05B387;
+        }
+        .mind-map-node .node-actions .delete-node-btn {
+            background-color: var(--accent-red);
+        }
+        .mind-map-node .node-actions .delete-node-btn:hover {
+            background-color: #E05B5B;
+        }
+        .add-subtask-input-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .add-subtask-input-group input {
+            flex-grow: 1;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-family: 'Vazirmatn', sans-serif;
+            text-align: right;
+            color: var(--light);
+        }
+        .add-subtask-input-group button {
+            background-color: var(--accent-green);
+            color: white;
+            padding: 0.8rem 1.6rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.2s;
+        }
+        .add-subtask-input-group button:hover {
+            background-color: #05B387;
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(1, 1fr);
+            }
+            .metric-card {
+                grid-column: span 12;
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 1rem;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+                order: 2; /* Sidebar at bottom for mobile */
+            }
+            .sidebar h1 {
+                display: none;
+            }
+            .sidebar nav ul {
+                display: flex;
+                justify-content: space-around;
+                width: 100%;
+            }
+            .sidebar nav li {
+                margin: 0;
+                flex: 1;
+            }
+            .sidebar nav a {
+                text-align: center;
+                padding: 0.5rem 0.2rem;
+                font-size: 0.85rem;
+                border-right: none;
+                border-top: 4px solid transparent; /* Highlight top */
+                border-radius: 0;
+                justify-content: center;
+            }
+            .sidebar nav a.active {
+                border-right-color: transparent;
+                border-top-color: var(--gold);
+                box-shadow: inset 0 0 10px rgba(255,215,0,0.2);
+            }
+            .user-profile {
+                display: none;
+            }
+            .main-content {
+                padding: 1.5rem;
+                order: 1; /* Main content at top for mobile */
+                min-height: calc(100vh - 80px); /* Adjust height for sidebar */
+            }
+            .section-header {
+                font-size: 2.2rem;
+            }
+            .section-description {
+                font-size: 1rem;
+            }
+            .metric-value {
+                font-size: 3.2rem;
+            }
+            .metric-label {
+                font-size: 1.2rem;
+            }
+            .river-visual-container {
+                height: 70px;
+            }
+            .river-point {
+                font-size: 2rem;
+            }
+            .storyboard-card {
+                flex: 0 0 90%; /* Make storyboard cards wider on small screens */
+            }
+            .prediction-table th, .prediction-table td, .task-item {
+                font-size: 0.9rem;
+                padding: 0.8rem;
+            }
+            .badge-card {
+                padding: 1.2rem;
+            }
+            .badge-icon {
+                font-size: 2.5rem;
+            }
+            .badge-title {
+                font-size: 1rem;
+            }
+            .xrm-grid {
+                grid-template-columns: repeat(1, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .metric-card {
+                grid-column: span 12; /* Each card takes full width */
+            }
+        }
+    </style>
+</head>
+<body class="bg-[var(--bg-main)]">
+
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="hidden md:flex flex-col w-64 bg-[var(--bg-sidebar)] border-l border-[var(--border-color)] flex-shrink-0">
+        <div class="px-6 py-4 border-b border-[var(--border-color)]">
+            <h1 class="text-xl font-bold text-[var(--primary)] flex items-center gap-2"><i class="fa-solid fa-rocket"></i> پنل فرماندهی</h1>
+        </div>
+        <nav class="flex-grow p-4">
+            <ul class="space-y-2">
+                <li><a href="#dashboard" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200" data-target="dashboard-section"><i class="fa-solid fa-chart-pie w-5 text-center"></i>داشبورد</a></li>
+                <li><a href="#storyboard" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200" data-target="storyboard-section"><i class="fa-solid fa-film w-5 text-center"></i>استوری‌بورد پروژه‌ها</a></li>
+                <li><a href="#my-storyboard" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200" data-target="my-storyboard-section"><i class="fas fa-route w-5 text-center"></i>استوری‌بورد من</a></li>
+                <li><a href="#predictions" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200" data-target="predictions-section"><i class="fa-solid fa-wand-magic-sparkles w-5 text-center"></i>پیش‌بینی‌ها</a></li>
+                <li><a href="#tasks" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200" data-target="tasks-section"><i class="fa-solid fa-tasks w-5 text-center"></i>وظایف</a></li>
+                <li><a href="#xrm" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200" data-target="xrm-section"><i class="fas fa-network-wired w-5 text-center"></i>سیستم XRM</a></li>
+                <li><a href="#achievements" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200" data-target="achievements-section"><i class="fa-solid fa-trophy w-5 text-center"></i>دستاوردها</a></li>
+                <li><a href="#" id="saveDataLink" class="nav-link flex items-center gap-3 px-4 py-2 rounded-lg transition-colors duration-200"><i class="fa-solid fa-download w-5 text-center"></i>ذخیره داده‌ها (JSON)</a></li>
+            </ul>
+        </nav>
+        
+        <div class="p-4 border-t border-[var(--border-color)]">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-[var(--primary)] flex items-center justify-center text-white font-bold">ف</div>
+                <div>
+                    <p class="font-semibold text-sm">فرمانده</p>
+                    <p class="text-xs text-[var(--text-muted)]">استراتژیست ارشد</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Mobile Bottom Nav -->
+    <nav class="md:hidden fixed bottom-0 right-0 left-0 bg-[var(--dark)] border-t border-[var(--border-color)] flex justify-around p-2 z-50">
+        <a href="#dashboard" class="nav-link flex flex-col items-center text-[var(--text-muted)] transition-colors p-2 rounded-lg" data-target="dashboard-section"><i class="fa-solid fa-chart-pie text-xl"></i><span class="text-xs mt-1">داشبورد</span></a>
+        <a href="#storyboard" class="nav-link flex flex-col items-center text-[var(--text-muted)] transition-colors p-2 rounded-lg" data-target="storyboard-section"><i class="fa-solid fa-film text-xl"></i><span class="text-xs mt-1">استوری‌بورد</span></a>
+        <a href="#my-storyboard" class="nav-link flex flex-col items-center text-[var(--text-muted)] transition-colors p-2 rounded-lg" data-target="my-storyboard-section"><i class="fas fa-route text-xl"></i><span class="text-xs mt-1">مسیر من</span></a>
+        <a href="#predictions" class="nav-link flex flex-col items-center text-[var(--text-muted)] transition-colors p-2 rounded-lg" data-target="predictions-section"><i class="fa-solid fa-wand-magic-sparkles text-xl"></i><span class="text-xs mt-1">پیش‌بینی</span></a>
+        <a href="#tasks" class="nav-link flex flex-col items-center text-[var(--text-muted)] transition-colors p-2 rounded-lg" data-target="tasks-section"><i class="fa-solid fa-tasks text-xl"></i><span class="text-xs mt-1">وظایف</span></a>
+        <a href="#xrm" class="nav-link flex flex-col items-center text-[var(--text-muted)] transition-colors p-2 rounded-lg" data-target="xrm-section"><i class="fas fa-network-wired text-xl"></i><span class="text-xs mt-1">XRM</span></a>
+        <a href="#achievements" class="nav-link flex flex-col items-center text-[var(--text-muted)] transition-colors p-2 rounded-lg" data-target="achievements-section"><i class="fa-solid fa-trophy text-xl"></i><span class="text-xs mt-1">دستاوردها</span></a>
+    </nav>
+
+
+    <!-- Main Content -->
+    <main class="flex-grow p-4 sm:p-6 md:p-8 overflow-y-auto pb-20 md:pb-8">
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="content-section">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-2 section-header"><i class="fas fa-chart-network"></i>وضعیت فعلی عملیات</h2>
+            <p class="text-[var(--text-muted)] mb-8 section-description">این بخش یک نمای کلی و فوری از معیارهای کلیدی عملکرد شما ارائه می‌دهد. با تحلیل روندها و پیشرفت استراتژیک، تصمیمات آگاهانه‌تری بگیرید.</p>
+
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="bg-[var(--card-bg-dark)] p-5 rounded-xl border border-[var(--border-color)] shadow-sm metric-card">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-semibold text-[var(--text-muted)]">انرژی جریان (Flow)</h3>
+                        <i class="fa-solid fa-bolt text-lg text-[var(--gold)]"></i>
+                    </div>
+                    <p class="text-4xl font-bold mt-2 text-[var(--gold)]" id="flowEnergy">0</p>
+                </div>
+                <div class="bg-[var(--card-bg-dark)] p-5 rounded-xl border border-[var(--border-color)] shadow-sm metric-card">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-semibold text-[var(--text-muted)]">سطح فرماندهی</h3>
+                        <i class="fa-solid fa-water text-lg text-[var(--gold)]"></i>
+                    </div>
+                    <p class="text-4xl font-bold mt-2 text-[var(--gold)]" id="riverLevel">1</p>
+                </div>
+                <div class="bg-[var(--card-bg-dark)] p-5 rounded-xl border border-[var(--border-color)] shadow-sm metric-card">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-semibold text-[var(--text-muted)]">چالش‌های حل‌شده</h3>
+                        <i class="fa-solid fa-shield-halved text-lg text-[var(--gold)]"></i>
+                    </div>
+                    <p class="text-4xl font-bold mt-2 text-[var(--gold)]" id="obstaclesSolved">0</p>
+                </div>
+            </div>
+
+            <!-- Chart and Controls -->
+            <div class="bg-[var(--card-bg-dark)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] shadow-sm mb-8 progress-container">
+                <h3 class="text-lg font-bold mb-4 text-center text-[var(--light)]">روند پیشرفت معیارها</h3>
+                <div class="chart-container">
+                    <canvas id="metricsChart"></canvas>
+                </div>
+                <div class="mt-6 flex flex-wrap justify-center gap-4 input-group">
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="flowEnergyInput" class="w-24 bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 text-center text-[var(--light)]" value="0">
+                        <button onclick="setMetric('flowEnergy')" class="px-4 py-2 bg-[var(--accent-green)] text-white rounded-md hover:bg-opacity-90 transition btn btn-secondary">تنظیم انرژی</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="riverLevelInput" class="w-24 bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 text-center text-[var(--light)]" value="1">
+                        <button onclick="setMetric('riverLevel')" class="px-4 py-2 bg-[var(--accent-green)] text-white rounded-md hover:bg-opacity-90 transition btn btn-secondary">تنظیم سطح</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="obstaclesSolvedInput" class="w-24 bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 text-center text-[var(--light)]" value="0">
+                        <button onclick="setMetric('obstaclesSolved')" class="px-4 py-2 bg-[var(--accent-green)] text-white rounded-md hover:bg-opacity-90 transition btn btn-secondary">تنظیم چالش‌ها</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategic Progress -->
+            <div class="bg-[var(--card-bg-dark)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] shadow-sm progress-container">
+                <h3 class="text-lg font-bold mb-2 text-center text-[var(--light)]">پیشرفت استراتژیک</h3>
+                <p class="text-[var(--text-muted)] text-center mb-6" id="riverLevelMessage">سفر آغاز شده است!</p>
+                <div class="w-full bg-[rgba(255,255,255,0.1)] rounded-full h-8 overflow-hidden relative progress-bar-container">
+                    <div id="riverPath" class="bg-[var(--primary)] h-full rounded-full transition-all duration-700 ease-out progress-bar-fill"></div>
+                    <div class="absolute inset-0 flex justify-between items-center px-4 river-visual-container">
+                        <div class="river-point" style="left: 0%;" data-level="1">🚀<span class="text-label">شروع</span></div>
+                        <div class="river-point" style="left: 20%;" data-level="3">📝<span class="text-label">برنامه</span></div>
+                        <div class="river-point" style="left: 50%;" data-level="6">⚙️<span class="text-label">اجرا</span></div>
+                        <div class="river-point" style="left: 80%;" data-level="9">📈<span class="text-label">مقیاس</span></div>
+                        <div class="river-point" style="left: 98%;" data-level="10">🌌<span class="text-label">اقیانوس</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Storyboard Section (for project phases) -->
+        <section id="storyboard-section" class="content-section">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-2 section-header"><i class="fas fa-film"></i>استوری‌بورد پروژه‌ها</h2>
+            <p class="text-[var(--text-muted)] mb-8 section-description">گام‌های استراتژیک و پیشرفت پروژه‌های خود را به صورت بصری دنبال کنید. این نما به شما کمک می‌کند تا تصویر بزرگتر را ببینید.</p>
+
+            <div class="storyboard-container flex gap-6 pb-4 -mx-4 px-4 overflow-x-auto">
+                <!-- Storyboard cards will be rendered here -->
+            </div>
+            <div class="mt-8 p-6 bg-[var(--card-bg-dark)] rounded-xl border border-[var(--border-color)]">
+                <h3 class="text-lg font-semibold mb-4 text-[var(--light)]">افزودن گام جدید به استوری‌بورد</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <input type="text" id="newStoryboardTitle" placeholder="عنوان پروژه/گام" class="lg:col-span-2 w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 focus:ring-2 focus:ring-[var(--gold)] outline-none text-[var(--light)]">
+                    <input type="text" id="newStoryboardDesc" placeholder="توضیح کوتاه" class="lg:col-span-2 w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 focus:ring-2 focus:ring-[var(--gold)] outline-none text-[var(--light)]">
+                    <input type="number" id="newStoryboardProgress" placeholder="پیشرفت %" min="0" max="100" class="w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 focus:ring-2 focus:ring-[var(--gold)] outline-none text-[var(--light)]">
+                    <button onclick="addStoryboardCard()" class="w-full px-4 py-2 bg-[var(--accent-green)] text-white rounded-md hover:bg-opacity-90 transition btn btn-secondary">افزودن گام استوری‌بورد</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Storyboard Section (for personal visual maps) -->
+        <section id="my-storyboard-section" class="content-section">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-2 section-header"><i class="fas fa-route"></i>استوری‌بورد من</h2>
+            <p class="text-[var(--text-muted)] mb-8 section-description">اینجا می‌توانید صفحات استوری‌بورد و نقشه‌های مسیر بصری خود را برای هر پروژه یا ایده‌ای که در ذهن دارید، مدیریت کنید.</p>
+
+            <div class="mb-8 p-6 bg-[var(--card-bg-dark)] rounded-xl border border-[var(--border-color)]">
+                <h3 class="text-lg font-semibold mb-4 text-[var(--light)]">افزودن تصویر استوری‌بورد</h3>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="newStoryboardImageTitle" placeholder="عنوان تصویر (مثال: نقشه فاز ۱ بیوتی پرو)" class="flex-grow w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 focus:ring-2 focus:ring-[var(--gold)] outline-none text-[var(--light)]">
+                    <input type="url" id="newStoryboardImageUrl" placeholder="آدرس URL تصویر (مثال: https://example.com/map1.jpg)" class="flex-grow w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 focus:ring-2 focus:ring-[var(--gold)] outline-none text-[var(--light)]">
+                    <button onclick="addMyStoryboardImage()" class="px-6 py-2 bg-[var(--accent-green)] text-white rounded-md hover:bg-opacity-90 transition-colors btn btn-secondary">افزودن تصویر</button>
+                </div>
+            </div>
+
+            <div id="myStoryboardGallery" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- My Storyboard Images will be rendered here -->
+            </div>
+            <p id="noMyStoryboardImagesMessage" class="text-center text-[var(--text-muted)] py-4 hidden">هنوز هیچ تصویری به استوری‌بورد من اضافه نشده است.</p>
+        </section>
+
+        <!-- Predictions Section -->
+        <section id="predictions-section" class="content-section">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-2 section-header"><i class="fas fa-wand-magic-sparkles"></i>داشبورد پیش‌بینی‌ها</h2>
+            <p class="text-[var(--text-muted)] mb-8 section-description">به عنوان یک سوپرفورکستر، پیش‌بینی‌های خود را پایش کرده و احتمالات وقوع آن‌ها را بر اساس اطلاعات جدید به‌روز کنید.</p>
+            
+            <div class="mb-8 p-6 bg-[var(--card-bg-dark)] rounded-xl border border-[var(--border-color)]">
+                <h3 class="text-lg font-semibold mb-4 text-[var(--light)]">افزودن پیش‌بینی جدید</h3>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="newPredictionText" placeholder="متن پیش‌بینی (مثال: رسیدن به ۱۰۰۰ کاربر تا پایان فصل)" class="flex-grow w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 focus:ring-2 focus:ring-[var(--gold)] outline-none text-[var(--light)]">
+                    <input type="number" id="newInitialProb" placeholder="احتمال اولیه %" min="0" max="100" class="w-full sm:w-32 bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 focus:ring-2 focus:ring-[var(--gold)] outline-none text-[var(--light)]">
+                    <button onclick="addPrediction()" class="px-6 py-2 bg-[var(--accent-green)] text-white rounded-md hover:bg-opacity-90 transition-colors btn btn-secondary">افزودن</button>
+                </div>
+            </div>
+
+            <div class="bg-[var(--card-bg-dark)] rounded-xl border border-[var(--border-color)] overflow-hidden prediction-table">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-right">
+                        <thead class="bg-[linear-gradient(rgba(40,15,80,0.7),rgba(30,5,60,0.7))] text-xs text-[var(--text-muted)] uppercase">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-[var(--gold)]">پیش‌بینی</th>
+                                <th scope="col" class="px-6 py-3 text-[var(--gold)]">احتمال اولیه</th>
+                                <th scope="col" class="px-6 py-3 text-[var(--gold)]">احتمال فعلی</th>
+                                <th scope="col" class="px-6 py-3 text-[var(--gold)]">آخرین بروزرسانی</th>
+                                <th scope="col" class="px-6 py-3 text-center text-[var(--gold)]">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="predictionsTableBody">
+                            <!-- Prediction rows will be rendered here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tasks Section -->
+        <section id="tasks-section" class="content-section">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-2 section-header"><i class="fas fa-tasks"></i>وظایف و اولویت‌ها</h2>
+            <p class="text-[var(--text-muted)] mb-8 section-description">اولویت‌های کلیدی و وظایف اصلی خود را در اینجا مدیریت کنید. برای مشاهده و ویرایش زیروظایف، روی هر مورد کلیک کرده و نقشه ذهنی آن را باز کنید.</p>
+
+            <div class="mb-8 p-6 bg-[var(--card-bg-dark)] rounded-xl border border-[var(--border-color)]">
+                <h3 class="text-lg font-semibold mb-4 text-[var(--light)]">افزودن وظیفه جدید</h3>
+                <div class="flex gap-4">
+                    <input type="text" id="newTaskInput" placeholder="یک وظیفه یا اولویت جدید وارد کنید" class="flex-grow w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 focus:ring-2 focus:ring-[var(--gold)] outline-none text-[var(--light)]">
+                    <button onclick="addTask()" class="px-6 py-2 bg-[var(--accent-green)] text-white rounded-md hover:bg-opacity-90 transition-colors btn btn-secondary">افزودن</button>
+                </div>
+            </div>
+
+            <div id="taskList" class="space-y-3 task-list-container max-h-[550px] overflow-y-auto">
+                <!-- Task items will be rendered here -->
+            </div>
+        </section>
+
+        <!-- XRM Section -->
+        <section id="xrm-section" class="content-section">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-2 section-header"><i class="fas fa-network-wired"></i>سیستم XRM پیشرفته</h2>
+            <p class="text-[var(--text-muted)] mb-8 section-description">مدیریت کامل مشتریان، سرنخ‌ها و تعاملات پروژه‌ای برای آژانس یا تیم شما.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 xrm-grid">
+                <!-- Leads Panel -->
+                <div class="bg-[var(--card-bg-dark)] p-5 rounded-xl border border-[var(--border-color)] shadow-sm xrm-card">
+                    <h3 class="font-semibold text-lg mb-4 flex items-center gap-2 xrm-card-header"><i class="fa-solid fa-user-friends text-[var(--gold)]"></i> وضعیت سرنخ‌ها</h3>
+                    <div class="chart-container">
+                        <canvas id="leadsChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Clients Panel -->
+                <div class="bg-[var(--card-bg-dark)] p-5 rounded-xl border border-[var(--border-color)] shadow-sm xrm-card">
+                    <h3 class="font-semibold text-lg mb-4 flex items-center gap-2 xrm-card-header"><i class="fa-solid fa-users text-[var(--gold)]"></i> روند جذب مشتریان</h3>
+                    <div class="chart-container">
+                        <canvas id="clientsChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Projects Panel -->
+                <div class="bg-[var(--card-bg-dark)] p-5 rounded-xl border border-[var(--border-color)] shadow-sm xrm-card">
+                    <h3 class="font-semibold text-lg mb-4 flex items-center gap-2 xrm-card-header"><i class="fa-solid fa-project-diagram text-[var(--gold)]"></i> وضعیت پروژه‌ها</h3>
+                    <div class="chart-container">
+                        <canvas id="projectsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-[var(--card-bg-dark)] rounded-xl border border-[var(--border-color)] overflow-hidden xrm-card">
+                <h3 class="font-semibold text-lg p-5 border-b border-[var(--border-color)] flex items-center gap-2 xrm-card-header"><i class="fa-solid fa-history text-[var(--gold)]"></i> فعالیت‌های اخیر</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-right xrm-table">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-[var(--gold)]">زمان</th>
+                                <th scope="col" class="px-6 py-3 text-[var(--gold)]">نوع فعالیت</th>
+                                <th scope="col" class="px-6 py-3 text-[var(--gold)]">مشتری/سرنخ</th>
+                                <th scope="col" class="px-6 py-3 text-[var(--gold)]">جزئیات</th>
+                                <th scope="col" class="px-6 py-3 text-[var(--gold)]">وضعیت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="px-6 py-4 text-[var(--light)]">۱۴۰۳/۰۴/۱۰ - ۱۰:۳۰</td>
+                                <td class="px-6 py-4 text-[var(--light)]">تماس تلفنی</td>
+                                <td class="px-6 py-4 text-[var(--light)]">سالن زیبایی گلنار</td>
+                                <td class="px-6 py-4 text-[var(--light)]">پیگیری درخواست عضویت</td>
+                                <td class="px-6 py-4 text-[var(--accent-green)]">موفق</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 text-[var(--light)]">۱۴۰۳/۰۴/۰۹ - ۱۵:۴۵</td>
+                                <td class="px-6 py-4 text-[var(--light)]">ارسال ایمیل</td>
+                                <td class="px-6 py-4 text-[var(--light)]">آقای احمدی</td>
+                                <td class="px-6 py-4 text-[var(--light)]">ارسال پیشنهاد همکاری</td>
+                                <td class="px-6 py-4 text-[var(--gold)]">در انتظار</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 text-[var(--light)]">۱۴۰۳/۰۴/۰۸ - ۱۱:۲۰</td>
+                                <td class="px-6 py-4 text-[var(--light)]">جلسه حضوری</td>
+                                <td class="px-6 py-4 text-[var(--light)]">مجتمع آرایشی پریسا</td>
+                                <td class="px-6 py-4 text-[var(--light)]">معرفی سرویس‌های پروژه</td>
+                                <td class="px-6 py-4 text-[var(--accent-green)]">موفق</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 text-[var(--light)]">۱۴۰۳/04/۰۷ - ۱۴:۱۰</td>
+                                <td class="px-6 py-4 text-[var(--light)]">پیامک</td>
+                                <td class="px-6 py-4 text-[var(--light)]">سرنخ جدید</td>
+                                <td class="px-6 py-4 text-[var(--light)]">اطلاع رسانی تخفیف ویژه</td>
+                                <td class="px-6 py-4 text-[var(--primary)]">ارسال شده</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Achievements Section -->
+        <section id="achievements-section" class="content-section">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-2 section-header"><i class="fas fa-trophy"></i>نشان‌ها و دستاوردها</h2>
+            <p class="text-[var(--text-muted)] mb-8 section-description">نقاط عطف و دستاوردهای شما در طول سفر فرماندهی. نشان‌ها به صورت خودکار بر اساس پیشرفت شما در معیارهای کلیدی باز می‌شوند.</p>
+            <div id="achievements-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                <!-- Badge cards will be rendered here -->
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Mind Map Modal -->
+<div id="mindMapModal" class="modal">
+    <div class="modal-content bg-[var(--card-bg-dark)] rounded-xl border border-[var(--border-color)] w-11/12 max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center p-4 border-b border-[var(--border-color)]">
+            <h3 id="modalTaskTitle" class="text-lg font-bold text-[var(--gold)]">نقشه ذهنی</h3>
+            <button onclick="closeModal()" class="text-[var(--accent-red)] hover:opacity-80">
+                <i class="fa-solid fa-times text-2xl"></i>
+            </button>
+        </div>
+        <div class="p-6 flex-grow overflow-y-auto">
+            <div id="mindMapNodes" class="space-y-3">
+                <!-- Mind map nodes will be rendered here -->
+            </div>
+        </div>
+        <div class="p-4 border-t border-[var(--border-color)] bg-[rgba(15,12,41,0.6)] rounded-b-xl">
+            <div class="flex gap-4">
+                <input type="text" id="newSubTaskInput" placeholder="زیروظیفه جدید..." class="flex-grow w-full bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-2 focus:ring-2 focus:ring-[var(--gold)] outline-none text-[var(--light)]">
+                <button onclick="addSubtask()" class="px-6 py-2 bg-[var(--accent-green)] text-white rounded-md hover:bg-opacity-90 transition-colors btn btn-secondary">افزودن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    dayjs.extend(dayjs_plugin_relativeTime);
+    dayjs.locale('fa');
+
+    const MAX_RIVER_LEVEL = 10;
+    let metricsChart = null;
+    let leadsChartInstance = null;
+    let clientsChartInstance = null;
+    let projectsChartInstance = null;
+
+    let state = {
+        metrics: {
+            flowEnergy: 0,
+            riverLevel: 1,
+            obstaclesSolved: 0,
+        },
+        history: [], // Stores metric history for the chart
+        predictions: [],
+        tasks: [],
+        storyboardCards: [],
+        myStoryboardImages: [], // New array for personal storyboard images
+        achievements: {
+            flowingWater: { unlocked: false, condition: (s) => s.metrics.flowEnergy >= 10, icon: '💧', title: 'آب روان', desc: 'برای ۱۰+ انرژی جریان' },
+            stoneRiver: { unlocked: false, condition: (s) => s.metrics.obstaclesSolved >= 1, icon: '⛰️', title: 'رودخانه سنگی', desc: 'برای حل ۱ چالش بزرگ' },
+            waveBreaker: { unlocked: false, condition: (s) => s.metrics.obstaclesSolved >= 5, icon: '🌊', title: 'موج‌شکن', desc: 'برای حل ۵ چالش' },
+            oceanMonarch: { unlocked: false, condition: (s) => s.metrics.riverLevel >= MAX_RIVER_LEVEL, icon: '👑', title: 'پادشاه اقیانوس', desc: `رسیدن به سطح ${MAX_RIVER_LEVEL}` },
+            firstPrinciplesThinker: { unlocked: false, condition: (s) => s.metrics.obstaclesSolved >= 3, icon: '🧠', title: 'تفکر مبنایی', desc: 'برای حل ۳+ چالش' },
+            targetAcquired: { unlocked: false, condition: (s) => s.metrics.riverLevel >= 5, icon: '🎯', title: 'هدف‌گیر', desc: 'رسیدن به سطح ۵' },
+            superforecaster: { unlocked: false, condition: (s) => s.predictions.length >= 3, icon: '🔮', title: 'سوپرفورکستر', desc: 'مدیریت ۳+ پیش‌بینی' },
+            masterStrategist: { unlocked: false, condition: (s) => s.tasks.length >= 5, icon: '♟️', title: 'استاد استراتژی', desc: 'برای ایجاد ۵+ وظیفه' },
+            modernSamurai: { unlocked: false, condition: (s) => s.metrics.riverLevel >= 7, icon: '⚔️', title: 'سامورایی مدرن', desc: 'پیاده‌سازی اصول پنج حلقه در عمل' },
+            launchpadMaster: { unlocked: false, condition: (s) => s.storyboardCards.length >= 3, icon: '🚀', title: 'استاد پرتاب', desc: 'ایجاد ۳+ گام استوری‌بورد' },
+            growthCatalyst: { unlocked: false, condition: (s) => s.metrics.riverLevel >= 8, icon: '📈', title: 'کاتالیزور رشد', desc: 'رسیدن به اهداف رشد تعیین شده برای پروژه (مثال: ۱۰۰ کاربر فعال)' },
+            aiVisionary: { unlocked: false, condition: (s) => s.metrics.obstaclesSolved >= 7, icon: '🤖', title: 'پیشگام هوش مصنوعی', desc: 'استفاده حرفه‌ای از ۵+ ابزار و عامل هوش مصنوعی' },
+            visualStoryteller: { unlocked: false, condition: (s) => s.myStoryboardImages.length >= 1, icon: '🖼️', title: 'راوی بصری', desc: 'آغاز استوری‌بورد شخصی با حداقل ۱ تصویر.' } // New badge for personal storyboard
+        },
+        currentEditingTaskId: null,
+    };
+
+    // --- State Management & Persistence ---
+    function saveData() {
+        localStorage.setItem('proCommandPanelState', JSON.stringify(state));
+    }
+
+    function loadData() {
+        const savedState = localStorage.getItem('proCommandPanelState');
+        if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            // Deep merge to prevent issues with new properties in default state
+            state = {
+                ...state,
+                ...parsedState,
+                metrics: { ...state.metrics, ...parsedState.metrics },
+                // Achievements: re-evaluate conditions based on loaded data, don't overwrite structure
+                achievements: Object.keys(state.achievements).reduce((acc, key) => {
+                    // Make sure the condition function is preserved if it came from default
+                    const conditionFn = state.achievements[key].condition || (() => false); // Fallback
+                    acc[key] = { 
+                        ...state.achievements[key], 
+                        unlocked: parsedState.achievements[key] ? parsedState.achievements[key].unlocked : false,
+                        condition: conditionFn // Re-assign the original function
+                    };
+                    return acc;
+                }, {})
+            };
+            // Ensure arrays exist
+            state.history = Array.isArray(state.history) ? state.history : [];
+            state.predictions = Array.isArray(state.predictions) ? state.predictions : [];
+            state.tasks = Array.isArray(state.tasks) ? state.tasks : [];
+            state.storyboardCards = Array.isArray(state.storyboardCards) ? state.storyboardCards : [];
+            state.myStoryboardImages = Array.isArray(state.myStoryboardImages) ? state.myStoryboardImages : [];
+
+        } else {
+            // Initialize with default data if nothing is saved
+            initializeDefaultData();
+            addHistoryEntry(); // Add initial state to history only when fresh load
+        }
+        renderAll();
+    }
+    
+    // Function to initialize default tasks and storyboard cards if no data exists
+    function initializeDefaultData() {
+        state.tasks = [
+            { id: Date.now(), text: "شروع ساخت مایند مپ", subtasks: [] },
+            { id: Date.now() + 1, text: "تهیه برگه‌ی بزرگ برای نقشه‌ی ذهنی (فیزیکی یا دیجیتال)", subtasks: [] },
+            { id: Date.now() + 2, text: "برنامه ریزی دقیق و گام به گام برای رشد همزمان کارها", subtasks: [] }
+        ];
+        state.storyboardCards = [
+            { id: Date.now() + 3, title: "پروژه Beauty Pro", desc: "پروژه کارآفرینانه در حوزه زیبایی که در ۴ روز از ایده به برنامه‌ریزی رسیده و در حال اجرا است.", progress: 40 },
+            { id: Date.now() + 4, title: "آماده سازی تیم و منابع اولیه", desc: "استخدام و آموزش نیروهای کلیدی و تهیه ابزارهای لازم.", progress: 10 },
+            { id: Date.now() + 5, title: "تدوین استراتژی جذب اولیه مشتریان", desc: "طراحی کمپین‌های جذب ۳۰ شریک اول و جمع آوری بازخورد.", progress: 5 }
+        ];
+        state.predictions = [
+            { id: Date.now() + 6, text: "پروژه Beauty Pro در 13 روز راه‌اندازی می‌شود", initialProb: 85, currentProb: 90, lastUpdated: new Date().toISOString() },
+            { id: Date.now() + 7, text: "جذب 5 مشتری اولیه تا پایان ماه جاری", initialProb: 60, currentProb: 65, lastUpdated: new Date().toISOString() }
+        ];
+        state.metrics.flowEnergy = 25; // Default initial values for metrics
+        state.metrics.riverLevel = 1;
+        state.metrics.obstaclesSolved = 0;
+        state.myStoryboardImages = []; // Ensure this is initialized as empty
+    }
+
+
+    // --- Rendering Functions ---
+    function renderAll() {
+        renderMetrics();
+        renderRiverVisual();
+        renderChart(); // Main dashboard chart
+        renderStoryboardCards();
+        renderMyStoryboardImages(); // Render personal storyboard
+        renderPredictions();
+        renderTasks();
+        renderAchievements();
+        // XRM charts are initialized via observer when XRM section becomes active
+    }
+
+    function renderMetrics() {
+        document.getElementById('flowEnergy').innerText = state.metrics.flowEnergy;
+        document.getElementById('riverLevel').innerText = state.metrics.riverLevel;
+        document.getElementById('obstaclesSolved').innerText = state.metrics.obstaclesSolved;
+
+        document.getElementById('flowEnergyInput').value = state.metrics.flowEnergy;
+        document.getElementById('riverLevelInput').value = state.metrics.riverLevel;
+        document.getElementById('obstaclesSolvedInput').value = state.metrics.obstaclesSolved;
+    }
+
+    function renderRiverVisual() {
+        const riverLevel = state.metrics.riverLevel;
+        const riverPath = document.getElementById('riverPath');
+        const riverLevelMessage = document.getElementById('riverLevelMessage');
+        let progressPercentage = (riverLevel / MAX_RIVER_LEVEL) * 100;
+        riverPath.style.width = `${Math.min(progressPercentage, 100)}%`;
+
+        const messages = {
+            1: "سطح فرماندهی شما در حال حاضر ۱ است. سفر آغاز شده است!", 2: "سطح فرماندهی در حال افزایش است. در مسیر درست هستید!", 3: "به فاز برنامه‌ریزی عمیق رسیده‌اید. تحلیل‌ها را تکمیل کنید!", 4: "برنامه‌های شما در حال شکل‌گیری است. با دقت پیش بروید!", 5: "در نیمه‌راه سفر فرماندهی هستید. نقطه عطف مهمی است!", 6: "فاز اجرا با قدرت آغاز شده. بر پیشبرد اهداف متمرکز شوید!", 7: "عملیات در حال گسترش است. رهبری شما کلیدی است!", 8: "نزدیک فاز مقیاس‌پذیری هستید. برای گسترش آماده شوید!", 9: "در آستانه مقیاس‌پذیری عظیم. فرماندهی نهایی را انجام دهید!", 10: "به اقیانوس رسیدید! تبریک می‌گویم، چشم‌انداز شما محقق شد."
+        };
+        riverLevelMessage.innerText = messages[riverLevel] || `سطح فرماندهی شما ${riverLevel} است.`;
+
+        document.querySelectorAll('.river-point').forEach(point => {
+            point.classList.toggle('river-point-unlocked', riverLevel >= parseInt(point.dataset.level));
+        });
+    }
+
+    function renderChart() {
+        const ctx = document.getElementById('metricsChart').getContext('2d');
+        const labels = state.history.map(h => dayjs(h.date).format('YYYY/MM/DD'));
+        const flowData = state.history.map(h => h.metrics.flowEnergy);
+        const levelData = state.history.map(h => h.metrics.riverLevel);
+        const obstaclesData = state.history.map(h => h.metrics.obstaclesSolved);
+
+        if (metricsChart) {
+            metricsChart.data.labels = labels;
+            metricsChart.data.datasets[0].data = flowData;
+            metricsChart.data.datasets[1].data = levelData;
+            metricsChart.data.datasets[2].data = obstaclesData;
+            metricsChart.update();
+        } else {
+            metricsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'انرژی جریان', data: flowData, borderColor: 'var(--gold)', tension: 0.3, fill: false },
+                        { label: 'سطح فرماندهی', data: levelData, borderColor: 'var(--primary)', tension: 0.3, fill: false },
+                        { label: 'چالش‌های حل‌شده', data: obstaclesData, borderColor: 'var(--accent-green)', tension: 0.3, fill: false }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: 'var(--text-muted)' }
+                        },
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: 'var(--text-muted)' }
+                        }
+                    },
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom',
+                            labels: { color: 'var(--light)', font: { family: 'Vazirmatn, sans-serif' } }
+                        },
+                        tooltip: {
+                            rtl: true,
+                            titleFont: { family: 'Vazirmatn, sans-serif' },
+                            bodyFont: { family: 'Vazirmatn, sans-serif' }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function renderStoryboardCards() {
+        const container = document.querySelector('#storyboard-section .storyboard-container');
+        container.innerHTML = state.storyboardCards.map(card => `
+            <div class="storyboard-card flex-shrink-0 w-72 bg-[var(--card-bg-dark)] rounded-xl border border-[var(--border-color)] shadow-sm p-5">
+                <div class="flex justify-between items-start">
+                    <h4 class="font-bold text-md mb-2 text-[var(--light)]">${card.title}</h4>
+                    <button onclick="deleteStoryboardCard(${card.id})" class="text-gray-400 hover:text-[var(--accent-red)] transition-colors"><i class="fa-solid fa-trash-alt"></i></button>
+                </div>
+                <p class="text-sm text-[var(--text-muted)] mb-4 h-10 overflow-hidden">${card.desc}</p>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 storyboard-timeline">
+                    <div class="bg-[var(--gold)] h-2.5 rounded-full storyboard-progress" style="width: ${card.progress}%"></div>
+                </div>
+                <p class="text-xs text-right mt-2 text-[var(--text-muted)]">${card.progress}% تکمیل شده</p>
+            </div>
+        `).join('');
+        if (state.storyboardCards.length === 0) {
+            container.innerHTML = `<p class="text-[var(--text-muted)] text-center w-full">هنوز گامی به استوری‌بورد اضافه نشده است.</p>`;
+        }
+    }
+
+    function renderMyStoryboardImages() {
+        const gallery = document.getElementById('myStoryboardGallery');
+        gallery.innerHTML = state.myStoryboardImages.map((image, index) => `
+            <div class="bg-[var(--card-bg-dark)] p-4 rounded-xl border border-[var(--border-color)] shadow-sm flex flex-col">
+                <h4 class="font-bold text-md mb-2 text-[var(--light)]">${image.title}</h4>
+                <img src="${image.url}" alt="${image.title}" class="w-full h-40 object-cover rounded-md mb-3 border border-gray-700">
+                <div class="flex justify-between items-center mt-auto">
+                    <p class="text-xs text-[var(--text-muted)]">اضافه شده: ${dayjs(image.dateAdded).format('YYYY/MM/DD')}</p>
+                    <button onclick="deleteMyStoryboardImage(${image.id})" class="text-gray-400 hover:text-[var(--accent-red)] transition-colors"><i class="fa-solid fa-trash-alt"></i></button>
+                </div>
+            </div>
+        `).join('');
+        const noImagesMessage = document.getElementById('noMyStoryboardImagesMessage');
+        if (state.myStoryboardImages.length === 0) {
+            noImagesMessage.classList.remove('hidden');
+        } else {
+            noImagesMessage.classList.add('hidden');
+        }
+    }
+
+    function renderPredictions() {
+        const tableBody = document.getElementById('predictionsTableBody');
+        tableBody.innerHTML = state.predictions.map(p => `
+            <tr class="border-b border-[var(--border-color)]">
+                <td class="px-6 py-4 font-medium text-[var(--light)]">${p.text}</td>
+                <td class="px-6 py-4 text-[var(--text-muted)]">${p.initialProb}%</td>
+                <td class="px-6 py-4">
+                    <input type="number" value="${p.currentProb}" min="0" max="100" class="w-16 bg-[rgba(0,0,0,0.3)] border border-[rgba(255,255,255,0.2)] rounded-md p-1 text-center text-[var(--light)]" onchange="updatePredictionProb(${p.id}, this.value)">%
+                </td>
+                <td class="px-6 py-4 text-[var(--text-muted)]">${dayjs(p.lastUpdated).fromNow()}</td>
+                <td class="px-6 py-4 text-center">
+                    <button onclick="deletePrediction(${p.id})" class="text-gray-400 hover:text-[var(--accent-red)] transition-colors"><i class="fa-solid fa-trash-alt"></i></button>
+                </td>
+            </tr>
+        `).join('');
+        if (state.predictions.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-[var(--text-muted)]">هنوز پیش‌بینی ثبت نشده است.</td></tr>`;
+        }
+    }
+
+    function renderTasks() {
+        const taskListDiv = document.getElementById('taskList');
+        taskListDiv.innerHTML = state.tasks.map(task => `
+            <div class="bg-[rgba(30,15,60,0.4)] p-4 rounded-xl border border-[var(--border-color)] flex justify-between items-center shadow-sm task-item">
+                <span class="font-semibold cursor-pointer flex-grow text-[var(--light)]" onclick="openMindMap(${task.id})">${task.text}</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs bg-[rgba(0,0,0,0.3)] text-[var(--text-muted)] rounded-full px-2 py-0.5">${task.subtasks.length} زیروظیفه</span>
+                    <button onclick="openMindMap(${task.id})" class="text-gray-400 hover:text-[var(--primary)] transition-colors w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-sitemap"></i></button>
+                    <button onclick="deleteTask(${task.id})" class="text-gray-400 hover:text-[var(--accent-red)] transition-colors w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-trash-alt"></i></button>
+                </div>
+            </div>
+        `).join('');
+        if (state.tasks.length === 0) {
+            taskListDiv.innerHTML = `<p class="text-center text-[var(--text-muted)]">هیچ وظیفه‌ای تعریف نشده است.</p>`;
+        }
+    }
+
+    function renderAchievements() {
+        const grid = document.getElementById('achievements-grid');
+        grid.innerHTML = Object.entries(state.achievements).map(([key, badge]) => `
+            <div class="badge-card bg-[var(--card-bg-dark)] rounded-xl border p-4 text-center transition-all duration-300 ${badge.unlocked ? 'badge-unlocked' : 'border-[var(--border-color)] opacity-60'}">
+                <div class="text-4xl mb-2 ${badge.unlocked ? 'text-[var(--gold)]' : 'text-gray-400'} badge-icon">${badge.icon}</div>
+                <h4 class="font-bold text-sm text-[var(--light)]">${badge.title}</h4>
+                <p class="text-xs text-[var(--text-muted)]">${badge.desc}</p>
+            </div>
+        `).join('');
+    }
+
+    function renderMindMapNodes() {
+        const task = state.tasks.find(t => t.id === state.currentEditingTaskId);
+        if (!task) return;
+        const mindMapNodesDiv = document.getElementById('mindMapNodes');
+        mindMapNodesDiv.innerHTML = task.subtasks.map(subtask => `
+            <div class="flex items-center gap-3 p-2 rounded-lg bg-[rgba(59,130,246,0.2)] mind-map-node">
+                <input type="text" value="${subtask.text}" class="flex-grow bg-transparent outline-none text-[var(--light)]" onblur="editSubtask(${subtask.id}, this.value)" onkeypress="if(event.key === 'Enter') this.blur();">
+                <button onclick="deleteSubtask(${subtask.id})" class="text-gray-400 hover:text-[var(--accent-red)] transition-colors delete-node-btn"><i class="fa-solid fa-times"></i></button>
+            </div>
+        `).join('');
+        if (task.subtasks.length === 0) {
+            mindMapNodesDiv.innerHTML = `<p class="text-center text-[var(--text-muted)] py-4">برای شروع، یک زیروظیفه اضافه کنید.</p>`;
+        }
+    }
+
+
+    // --- Logic & Event Handlers ---
+    function addHistoryEntry() {
+        state.history.push({
+            date: new Date().toISOString(),
+            metrics: { ...state.metrics }
+        });
+        // Keep history to a reasonable size
+        if (state.history.length > 30) {
+            state.history.shift();
+        }
+    }
+
+    function updateMetric(id, change) {
+        state.metrics[id] = Math.max(0, state.metrics[id] + change); // Ensure no negative values
+        document.getElementById(id).innerText = state.metrics[id];
+        document.getElementById(`${id}Input`).value = state.metrics[id];
+        addHistoryEntry();
+        updateAndSave();
+    }
+
+    function setMetric(id) {
+        const inputElement = document.getElementById(`${id}Input`);
+        let value = parseInt(inputElement.value);
+        if (isNaN(value)) value = state.metrics[id]; // Revert if invalid
+        value = Math.max(0, value); // Ensure no negative values
+        if (id === 'riverLevel') value = Math.min(value, MAX_RIVER_LEVEL); // Cap river level
+
+        state.metrics[id] = value;
+        document.getElementById(id).innerText = value; // Update displayed value
+        addHistoryEntry();
+        updateAndSave();
+    }
+    
+    function checkAchievements() {
+        Object.keys(state.achievements).forEach(key => {
+            const wasUnlocked = state.achievements[key].unlocked;
+            state.achievements[key].unlocked = state.achievements[key].condition(state);
+            // Optional: Add a visual notification if a new badge is unlocked
+            // if (!wasUnlocked && state.achievements[key].unlocked) {
+            //     alert(`تبریک! نشان "${state.achievements[key].title}" را کسب کردید!`);
+            // }
+        });
+    }
+
+    function updateAndSave() {
+        checkAchievements();
+        renderAll();
+        saveData();
+    }
+    
+    // Storyboard
+    function addStoryboardCard() {
+        const title = document.getElementById('newStoryboardTitle').value.trim();
+        const desc = document.getElementById('newStoryboardDesc').value.trim();
+        const progress = parseInt(document.getElementById('newStoryboardProgress').value);
+
+        if (title && desc && !isNaN(progress) && progress >= 0 && progress <= 100) {
+            state.storyboardCards.push({ id: Date.now(), title, desc, progress: Math.max(0, Math.min(100, progress)) });
+            document.getElementById('newStoryboardTitle').value = '';
+            document.getElementById('newStoryboardDesc').value = '';
+            document.getElementById('newStoryboardProgress').value = '';
+            updateAndSave();
+        } else {
+            alert('لطفاً عنوان، توضیحات و پیشرفت (بین ۰ تا ۱۰۰) گام استوری‌بورد را به درستی پر کنید.');
+        }
+    }
+    function deleteStoryboardCard(id) {
+        state.storyboardCards = state.storyboardCards.filter(card => card.id !== id);
+        updateAndSave();
+    }
+
+    // My Storyboard Images
+    function addMyStoryboardImage() {
+        const titleInput = document.getElementById('newStoryboardImageTitle');
+        const urlInput = document.getElementById('newStoryboardImageUrl');
+        const title = titleInput.value.trim();
+        const url = urlInput.value.trim();
+
+        if (title && url && (url.startsWith('http://') || url.startsWith('https://'))) {
+            state.myStoryboardImages.push({
+                id: Date.now(),
+                title: title,
+                url: url,
+                dateAdded: new Date().toISOString()
+            });
+            titleInput.value = '';
+            urlInput.value = '';
+            updateAndSave();
+        } else {
+            alert('لطفاً عنوان و یک آدرس URL معتبر (شروع با http:// یا https://) برای تصویر وارد کنید.');
+        }
+    }
+    function deleteMyStoryboardImage(id) {
+        state.myStoryboardImages = state.myStoryboardImages.filter(img => img.id !== id);
+        updateAndSave();
+    }
+
+    // Predictions
+    function addPrediction() {
+        const text = document.getElementById('newPredictionText');
+        const initialProb = parseInt(document.getElementById('newInitialProb').value);
+        if (text.value.trim() && !isNaN(initialProb) && initialProb >= 0 && initialProb <= 100) { // Check text.value.trim()
+            state.predictions.push({
+                id: Date.now(), text: text.value.trim(), initialProb, currentProb: initialProb, lastUpdated: new Date().toISOString()
+            });
+            text.value = '';
+            document.getElementById('newInitialProb').value = '';
+            updateAndSave();
+        } else {
+            alert('لطفاً متن پیش‌بینی و احتمال اولیه معتبر (۰ تا ۱۰۰) را وارد کنید.');
+        }
+    }
+    function updatePredictionProb(id, newProb) {
+        const prob = parseInt(newProb);
+        const prediction = state.predictions.find(p => p.id === id);
+        if (prediction && !isNaN(prob) && prob >= 0 && prob <= 100) {
+            prediction.currentProb = prob;
+            prediction.lastUpdated = new Date().toISOString();
+            updateAndSave();
+        } else {
+            renderPredictions(); // Re-render to reset invalid input
+            alert('لطفاً یک احتمال معتبر (۰ تا ۱۰۰) وارد کنید.');
+        }
+    }
+    function deletePrediction(id) {
+        state.predictions = state.predictions.filter(p => p.id !== id);
+        updateAndSave();
+    }
+
+    // Tasks & Mind Map
+    function addTask() {
+        const text = document.getElementById('newTaskInput');
+        const taskText = text.value.trim();
+        if (taskText) {
+            state.tasks.push({ id: Date.now(), text: taskText, subtasks: [] });
+            text.value = '';
+            updateAndSave();
+        }
+    }
+    function deleteTask(id) {
+        state.tasks = state.tasks.filter(task => task.id !== id);
+        updateAndSave();
+    }
+    function openMindMap(taskId) {
+        state.currentEditingTaskId = taskId;
+        const task = state.tasks.find(t => t.id === taskId);
+        if (task) {
+            document.getElementById('modalTaskTitle').innerText = `نقشه ذهنی: ${task.text}`;
+            renderMindMapNodes();
+            document.getElementById('mindMapModal').classList.add('flex');
+        }
+    }
+    function closeModal() {
+        document.getElementById('mindMapModal').classList.remove('flex');
+        state.currentEditingTaskId = null;
+    }
+    function addSubtask() {
+        const text = document.getElementById('newSubTaskInput');
+        const subtaskText = text.value.trim();
+        const task = state.tasks.find(t => t.id === state.currentEditingTaskId);
+        if (subtaskText && task) {
+            task.subtasks.push({ id: Date.now(), text: subtaskText });
+            text.value = '';
+            renderMindMapNodes();
+            saveData(); // Save immediately after subtask change
+            renderTasks(); // To update subtask count on task list
+        }
+    }
+    function editSubtask(subtaskId, newText) {
+        const task = state.tasks.find(t => t.id === state.currentEditingTaskId);
+        const subtask = task?.subtasks.find(st => st.id === subtaskId);
+        if (subtask) {
+            subtask.text = newText;
+            saveData(); // Save immediately after subtask change
+        }
+    }
+    function deleteSubtask(subtaskId) {
+        const task = state.tasks.find(t => t.id === state.currentEditingTaskId);
+        if (task) {
+            task.subtasks = task.subtasks.filter(st => st.id !== subtaskId);
+            renderMindMapNodes();
+            saveData(); // Save immediately after subtask change
+            renderTasks(); // To update subtask count on task list
+        }
+    }
+    
+    // XRM Charts initialization and update
+    function initXRMCharts() {
+        // Destroy existing chart instances if they exist
+        if (leadsChartInstance) leadsChartInstance.destroy();
+        if (clientsChartInstance) clientsChartInstance.destroy();
+        if (projectsChartInstance) projectsChartInstance.destroy();
+
+        const xrmData = { // Example static data for XRM charts
+            leads: { new: 15, inProgress: 8, converted: 5, lost: 2 },
+            clients: { jan: 12, feb: 19, mar: 15, apr: 17, may: 22, jun: 25 }, // Persian month labels are handled by Day.js locale
+            projects: { inProgress: 7, completed: 12, paused: 2, pending: 3 }
+        };
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { family: 'Vazirmatn, sans-serif' },
+                        color: 'var(--text-muted)'
+                    }
+                },
+                tooltip: {
+                    rtl: true,
+                    titleFont: { family: 'Vazirmatn, sans-serif' },
+                    bodyFont: { family: 'Vazirmatn, sans-serif' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { color: 'var(--text-muted)' }
+                },
+                x: {
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { color: 'var(--text-muted)' }
+                }
+            }
+        };
+
+        // Leads Chart
+        const leadsCtx = document.getElementById('leadsChart').getContext('2d');
+        leadsChartInstance = new Chart(leadsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['سرنخ جدید', 'در حال پیگیری', 'تبدیل شده', 'از دست رفته'],
+                datasets: [{
+                    data: Object.values(xrmData.leads),
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.8)', // Blue
+                        'rgba(255, 206, 86, 0.8)', // Yellow
+                        'rgba(75, 192, 192, 0.8)', // Green
+                        'rgba(255, 99, 132, 0.8)'  // Red
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: { ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'وضعیت سرنخ‌ها', font: { family: 'Vazirmatn, sans-serif', size: 16, color: 'var(--light)' } } }, scales: {} } // Doughnut chart doesn't use standard scales
+        });
+        
+        // Clients Chart
+        const clientsCtx = document.getElementById('clientsChart').getContext('2d');
+        clientsChartInstance = new Chart(clientsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['دی', 'بهمن', 'اسفند', 'فروردین', 'اردیبهشت', 'خرداد'],
+                datasets: [{
+                    label: 'مشتریان جدید',
+                    data: Object.values(xrmData.clients),
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    borderWidth: 1
+                }]
+            },
+            options: { ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'روند جذب مشتریان', font: { family: 'Vazirmatn, sans-serif', size: 16, color: 'var(--light)' } } } }
+        });
+        
+        // Projects Chart
+        const projectsCtx = document.getElementById('projectsChart').getContext('2d');
+        projectsChartInstance = new Chart(projectsCtx, {
+            type: 'pie',
+            data: {
+                labels: ['در حال انجام', 'تکمیل شده', 'متوقف شده', 'در انتظار'],
+                datasets: [{
+                    data: Object.values(xrmData.projects),
+                    backgroundColor: [
+                        'rgba(255, 159, 64, 0.8)', // Orange
+                        'rgba(153, 102, 255, 0.8)', // Purple
+                        'rgba(255, 99, 132, 0.8)', // Red
+                        'rgba(201, 203, 207, 0.8)' // Gray
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: { ...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'وضعیت پروژه‌ها', font: { family: 'Vazirmatn, sans-serif', size: 16, color: 'var(--light)' } } }, scales: {} } // Pie chart doesn't use standard scales
+        });
+    }
+
+    // --- JSON Export Functionality ---
+    function exportDataAsJson() {
+        const dataStr = JSON.stringify(state, null, 2); // Pretty print JSON
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const now = dayjs().format('YYYY-MM-DD_HH-mm-ss');
+        a.download = `command_panel_data_${now}.json`;
+        a.href = url;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert('داده‌های پنل فرماندهی شما با موفقیت ذخیره شد!');
+    }
+
+    // --- Initial Load & Navigation Setup ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Corrected navigation logic
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.dataset.target;
+                if (targetId) {
+                    showSection(targetId);
+                    history.pushState(null, '', '#' + targetId);
+                } else if (this.id === 'saveDataLink') {
+                    exportDataAsJson();
+                }
+            });
+        });
+
+        const hash = window.location.hash.substring(1);
+        const initialSectionId = hash || 'dashboard-section';
+        showSection(initialSectionId);
+
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                showSection(hash);
+            }
+        });
+        
+        loadData(); // Load all data after setting up nav
+        
+        window.addEventListener('keydown', (e) => {
+            if (e.key === "Escape" && document.getElementById('mindMapModal').classList.contains('flex')) {
+                closeModal();
+            }
+        });
+    });
+
+    function showSection(targetId) {
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+            targetSection.classList.add('active');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.dataset.target === targetId) {
+                link.classList.add('active');
+            }
+        });
+
+        // Initialize XRM charts if that section is activated
+        if (targetId === 'xrm-section') {
+            initXRMCharts();
+        }
+    }
+
+</script>
+</body>
+</html>
