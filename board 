@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تخته پروژه — استودیوی محتوا</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#141310;
+    --bg-1:#1b1a15;
+    --board:#211f19;
+    --paper:#f6f1e6;
+    --paper-dim:#e9e2d2;
+    --ink:#221f19;
+    --ink-soft:#5b564a;
+    --brass:#c7a15a;
+    --brass-bright:#e3c07f;
+    --line:rgba(199,161,90,.22);
+    --shadow:0 18px 40px -12px rgba(0,0,0,.55);
+    --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, #262319 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 10%, #201d17 0%, transparent 50%),
+      repeating-linear-gradient(135deg, rgba(255,255,255,.012) 0 2px, transparent 2px 6px),
+      var(--bg-0);
+    color:var(--paper);
+    font-family:'Vazirmatn',sans-serif;
+    min-height:100vh;
+  }
+  ::selection{background:var(--brass);color:#1a1811;}
+
+  /* ---------- top clip bar ---------- */
+  .clipbar{
+    position:sticky; top:0; z-index:40;
+    background:linear-gradient(180deg,#2a2820,#1c1a15 90%);
+    border-bottom:1px solid var(--line);
+    padding:14px 22px;
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand .clip{
+    width:34px;height:34px;border-radius:50%;
+    background:conic-gradient(from 220deg,#9c8149,#e3c07f,#8a7040,#e3c07f,#9c8149);
+    box-shadow:inset 0 0 0 3px #1c1a15, 0 2px 6px rgba(0,0,0,.5);
+  }
+  .brand h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.2px;}
+  .brand span{display:block;font-size:11.5px;color:var(--ink-soft);font-family:'Space Mono',monospace;letter-spacing:.5px;margin-top:2px;color:#9a9282;}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;}
+  .btn{
+    font-family:'Vazirmatn',sans-serif;
+    background:transparent;border:1px solid var(--line);color:var(--paper);
+    padding:9px 15px;border-radius:var(--radius);font-size:13.5px;cursor:pointer;
+    transition:background .15s,border-color .15s,transform .1s;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .btn:hover{border-color:var(--brass);background:rgba(199,161,90,.08);}
+  .btn:active{transform:translateY(1px);}
+  .btn.primary{background:var(--brass);color:#1c1a12;border-color:var(--brass);font-weight:600;}
+  .btn.primary:hover{background:var(--brass-bright);}
+  .btn.danger{border-color:#7a3b34;color:#e8a89f;}
+  .btn.danger:hover{background:rgba(122,59,52,.18);}
+  input[type=file]{display:none;}
+
+  /* ---------- board ---------- */
+  .board-wrap{max-width:1280px;margin:0 auto;padding:38px 24px 90px;}
+  .board-head{margin-bottom:28px;}
+  .board-head .eyebrow-free{color:var(--brass);font-size:13px;margin:0 0 6px;font-family:'Space Mono',monospace;}
+  .board-head h2{font-size:26px;margin:0 0 8px;font-weight:800;}
+  .board-head p{color:#a79f8c;font-size:14.5px;margin:0;max-width:640px;line-height:1.9;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+    gap:20px;
+  }
+  .card{
+    position:relative;
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:2px;
+    padding:20px 18px 18px;
+    min-height:168px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transform:rotate(var(--rot,0deg));
+    transition:transform .18s ease, box-shadow .18s ease;
+    border-top:6px solid var(--accent,#999);
+    background-image:
+      linear-gradient(var(--paper),var(--paper)),
+      repeating-linear-gradient(#0000 0 27px, rgba(34,31,25,.05) 27px 28px);
+  }
+  .card:hover{transform:rotate(0deg) translateY(-4px);box-shadow:0 24px 46px -10px rgba(0,0,0,.6);}
+  .card .pin{
+    position:absolute;top:-9px;right:22px;width:16px;height:16px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ffe6a8, var(--accent,#999) 65%);
+    box-shadow:0 3px 5px rgba(0,0,0,.45);
+  }
+  .card h3{margin:6px 0 4px;font-size:19px;font-weight:800;}
+  .card .sub{font-size:12px;color:var(--ink-soft);font-family:'Space Mono',monospace;margin:0 0 12px;}
+  .card ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;}
+  .card ul li{font-size:13px;color:#3a3628;display:flex;align-items:center;gap:7px;}
+  .card ul li::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent,#999);flex:none;}
+  .card .count{
+    position:absolute;bottom:14px;left:16px;font-family:'Space Mono',monospace;
+    font-size:11px;color:var(--ink-soft);
+  }
+  .card .more{font-size:12px;color:var(--ink-soft);}
+
+  .add-card{
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;
+    border:1.5px dashed var(--line);border-radius:2px;min-height:168px;cursor:pointer;
+    color:#a79f8c;background:rgba(255,255,255,.02);transition:border-color .15s,color .15s;
+  }
+  .add-card:hover{border-color:var(--brass);color:var(--brass-bright);}
+  .add-card .plus{font-size:26px;line-height:1;}
+
+  /* ---------- detail view ---------- */
+  .detail{
+    position:fixed;inset:0;background:rgba(10,9,7,.72);backdrop-filter:blur(3px);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:40px 20px;overflow-y:auto;z-index:60;
+  }
+  .detail.open{display:flex;}
+  .detail-sheet{
+    background:var(--board);border:1px solid var(--line);border-radius:6px;
+    width:100%;max-width:760px;box-shadow:var(--shadow);
+    animation:rise .22s ease;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .detail-top{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:20px 24px;border-bottom:1px solid var(--line);
+    border-top:5px solid var(--accent,#999);border-radius:6px 6px 0 0;
+  }
+  .detail-top h2{margin:0;font-size:21px;font-weight:800;}
+  .detail-top .close{background:none;border:none;color:#a79f8c;font-size:22px;cursor:pointer;line-height:1;}
+  .detail-top .close:hover{color:var(--paper);}
+  .detail-body{padding:22px 24px 26px;display:flex;flex-direction:column;gap:22px;}
+
+  .field-block label{display:block;font-size:12px;color:#a79f8c;margin-bottom:6px;font-family:'Space Mono',monospace;}
+  .field-row{display:flex;gap:8px;margin-bottom:8px;}
+  .field-row input[type=text]{
+    flex:1;background:#26241d;border:1px solid var(--line);color:var(--paper);
+    border-radius:3px;padding:9px 11px;font-size:13.5px;font-family:'Vazirmatn',sans-serif;
+  }
+  .field-row input[type=text]:focus{outline:none;border-color:var(--brass);}
+  .field-row .rm{background:none;border:1px solid var(--line);color:#c98b83;border-radius:3px;width:34px;cursor:pointer;font-size:15px;}
+  .field-row .rm:hover{border-color:#c98b83;background:rgba(201,139,131,.1);}
+  textarea{
+    width:100%;min-height:90px;background:#26241d;border:1px solid var(--line);color:var(--paper);
+    border-radius:3px;padding:11px;font-size:13.5px;font-family:'Vazirmatn',sans-serif;resize:vertical;
+  }
+  textarea:focus{outline:none;border-color:var(--brass);}
+
+  .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;}
+  .gallery .thumb{
+    position:relative;border-radius:4px;overflow:hidden;aspect-ratio:1/1;border:1px solid var(--line);background:#26241d;
+  }
+  .gallery .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .gallery .thumb.file{display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:10px;color:#a79f8c;padding:6px;text-align:center;gap:4px;}
+  .gallery .thumb .del{
+    position:absolute;top:3px;left:3px;background:rgba(15,13,10,.75);color:#eee;border:none;
+    width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;
+  }
+  .gallery .thumb .del:hover{background:#7a3b34;}
+  .upload-zone{
+    border:1.5px dashed var(--line);border-radius:4px;padding:18px;text-align:center;
+    font-size:13px;color:#a79f8c;cursor:pointer;transition:border-color .15s,color .15s;
+  }
+  .upload-zone:hover, .upload-zone.drag{border-color:var(--brass);color:var(--brass-bright);}
+
+  .detail-actions{display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid var(--line);gap:10px;flex-wrap:wrap;}
+  .save-hint{font-size:12px;color:#8f8873;font-family:'Space Mono',monospace;}
+
+  /* toast */
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:#26241d;border:1px solid var(--brass);color:var(--paper);
+    padding:11px 20px;border-radius:5px;font-size:13.5px;opacity:0;pointer-events:none;
+    transition:opacity .2s,transform .2s;z-index:80;box-shadow:var(--shadow);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:520px){
+    .clipbar{padding:12px 14px;}
+    .board-wrap{padding:26px 14px 70px;}
+    .toolbar{width:100%;justify-content:flex-start;}
+    .btn{padding:8px 12px;font-size:13px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="clipbar">
+  <div class="brand">
+    <div class="clip"></div>
+    <div>
+      <h1>تخته پروژه</h1>
+      <span>ابزارها و پروژه‌های تولید محتوا</span>
+    </div>
+  </div>
+  <div class="toolbar">
+    <button class="btn" id="btnImport">⭱ بازیابی پشتیبان</button>
+    <input type="file" id="fileImport" accept="application/json">
+    <button class="btn primary" id="btnExport">⭳ ذخیره پشتیبان (JSON)</button>
+  </div>
+</div>
+
+<div class="board-wrap">
+  <div class="board-head">
+    <p class="eyebrow-free">استودیو / نقشهٔ راه</p>
+    <h2>همهٔ ابزارها، یک تخته</h2>
+    <p>روی هر برگه بزن تا اطلاعات، لینک‌ها و فایل‌های همون پروژه رو ببینی و ویرایش کنی. هر تغییری بلافاصله ذخیره می‌شه؛ برای نگه‌داشتن دائمی، از «ذخیره پشتیبان» یک فایل JSON بگیر و هر وقت خواستی از «بازیابی پشتیبان» برش‌گردون.</p>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="detail" id="detail">
+  <div class="detail-sheet" id="detailSheet"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- data model ---------------- */
+const STORAGE_NOTE = "این صفحه اطلاعات رو فقط در حافظهٔ همین تب نگه می‌داره. برای ذخیرهٔ همیشگی از دکمهٔ «ذخیره پشتیبان» فایل JSON بگیر.";
+
+let state = {
+  projects: [
+    { id:"github", title:"GitHub", sub:"مخازن و دسترسی‌ها", accent:"#6e7681", rot:-1.4,
+      fields:[["یوزرنیم",""],["Repo",""],["رمز عبور",""]], notes:"", images:[] },
+
+    { id:"doc", title:"DOC", sub:"سند اصلی پروژه", accent:"#4f7cff", rot:1.1,
+      fields:[["استوری",""],["لینک",""],["پرامپت تصویر",""],["ویس",""],["موزیک",""],["اسکریپت",""],["ویدیو",""]], notes:"", images:[] },
+
+    { id:"flow", title:"Flow", sub:"چیدمان و برنامه‌ریزی صحنه‌ها", accent:"#2fb59a", rot:-0.8,
+      fields:[["Zapisław / نام سناریو",""]], notes:"", images:[] },
+
+    { id:"elevenlabs", title:"ElevenLabs", sub:"صداگذاری هوش مصنوعی", accent:"#8b5cf6", rot:1.6,
+      fields:[["صدا (Voice)",""]], notes:"", images:[] },
+
+    { id:"infinityfree", title:"Infinity Free", sub:"هاست و دامنهٔ رایگان", accent:"#4caf72", rot:-1.2,
+      fields:[["دامنه",""],["اطلاعات هاست",""]], notes:"", images:[] },
+
+    { id:"gemini", title:"Gemini", sub:"سناریونویسی و تصویر", accent:"#3b82f6", rot:1.0,
+      fields:[["سناریو",""],["توضیحات پرامپت",""]], notes:"", images:[] },
+
+    { id:"grok", title:"Grok", sub:"تولید محتوا با xAI", accent:"#111111", rot:-1.6,
+      fields:[["پرامپت",""]], notes:"", images:[] },
+
+    { id:"capcut", title:"CapCut", sub:"تدوین نهایی", accent:"#ff3d63", rot:1.3,
+      fields:[["ویدیو",""],["صدا",""],["موزیک",""]], notes:"", images:[] },
+
+    { id:"sono", title:"SONO", sub:"Minimax — موزیک هوش مصنوعی", accent:"#ff9740", rot:-1.0,
+      fields:[["مینی‌مکس",""],["موزیک",""]], notes:"", images:[] },
+
+    { id:"storyboard", title:"StoryBoard", sub:"برای مارک‌بندی و روند کار", accent:"#c7a15a", rot:1.4,
+      fields:[["نشانه‌گذاری (Mark)",""],["روند کار (Workflow)",""]], notes:"", images:[] },
+  ]
+};
+
+let activeId = null;
+
+/* ---------------- render board ---------------- */
+const grid = document.getElementById('grid');
+
+function renderGrid(){
+  grid.innerHTML = "";
+  state.projects.forEach(p=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.setProperty('--accent', p.accent);
+    card.style.setProperty('--rot', p.rot+'deg');
+    const filled = p.fields.filter(f=>f[1] && f[1].trim()).length;
+    card.innerHTML = `
+      <div class="pin"></div>
+      <h3>${esc(p.title)}</h3>
+      <p class="sub">${esc(p.sub)}</p>
+      <ul>${p.fields.slice(0,4).map(f=>`<li>${esc(f[0])}</li>`).join("")}${p.fields.length>4?`<li class="more">+ ${p.fields.length-4} مورد دیگر</li>`:""}</ul>
+      <div class="count">${filled}/${p.fields.length} تکمیل · ${p.images.length} فایل</div>
+    `;
+    card.addEventListener('click', ()=>openDetail(p.id));
+    grid.appendChild(card);
+  });
+
+  const addCard = document.createElement('div');
+  addCard.className = 'add-card';
+  addCard.innerHTML = `<div class="plus">+</div><div>پروژهٔ جدید</div>`;
+  addCard.addEventListener('click', addProject);
+  grid.appendChild(addCard);
+}
+
+function addProject(){
+  const title = prompt("نام پروژه؟");
+  if(!title) return;
+  const colors = ["#4f7cff","#2fb59a","#ff3d63","#c7a15a","#8b5cf6","#ff9740"];
+  state.projects.push({
+    id: "p"+Date.now(),
+    title, sub:"پروژهٔ جدید",
+    accent: colors[state.projects.length % colors.length],
+    rot: (Math.random()*3-1.5).toFixed(1),
+    fields:[["فیلد ۱",""]], notes:"", images:[]
+  });
+  renderGrid();
+}
+
+/* ---------------- detail view ---------------- */
+const detail = document.getElementById('detail');
+const detailSheet = document.getElementById('detailSheet');
+
+function openDetail(id){
+  activeId = id;
+  renderDetail();
+  detail.classList.add('open');
+}
+function closeDetail(){
+  detail.classList.remove('open');
+  activeId = null;
+  renderGrid();
+}
+detail.addEventListener('click', e=>{ if(e.target===detail) closeDetail(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && detail.classList.contains('open')) closeDetail(); });
+
+function getProject(){ return state.projects.find(p=>p.id===activeId); }
+
+function renderDetail(){
+  const p = getProject();
+  if(!p) return;
+  detailSheet.style.setProperty('--accent', p.accent);
+  detailSheet.innerHTML = `
+    <div class="detail-top">
+      <h2 contenteditable="true" id="titleEdit">${esc(p.title)}</h2>
+      <button class="close" id="closeBtn">×</button>
+    </div>
+    <div class="detail-body">
+      <div class="field-block">
+        <label>فیلدها</label>
+        <div id="fieldsWrap"></div>
+        <button class="btn" id="addFieldBtn">+ افزودن فیلد</button>
+      </div>
+
+      <div class="field-block">
+        <label>یادداشت</label>
+        <textarea id="notesArea" placeholder="یادداشت آزاد...">${esc(p.notes)}</textarea>
+      </div>
+
+      <div class="field-block">
+        <label>فایل‌ها و تصاویر</label>
+        <div class="gallery" id="galleryWrap"></div>
+        <div class="upload-zone" id="uploadZone">برای آپلود عکس، متن یا هر فایلی، کلیک کن یا فایل رو اینجا رها کن</div>
+        <input type="file" id="fileInput" multiple>
+      </div>
+
+      <div class="detail-actions">
+        <button class="btn danger" id="deleteProjectBtn">حذف این پروژه</button>
+        <span class="save-hint">تغییرات به‌صورت خودکار ذخیره می‌شه</span>
+      </div>
+    </div>
+  `;
+
+  renderFields();
+  renderGallery();
+
+  document.getElementById('closeBtn').addEventListener('click', closeDetail);
+  document.getElementById('titleEdit').addEventListener('blur', e=>{ p.title = e.target.textContent.trim() || p.title; toast('عنوان به‌روزرسانی شد'); });
+  document.getElementById('notesArea').addEventListener('input', e=>{ p.notes = e.target.value; });
+  document.getElementById('addFieldBtn').addEventListener('click', ()=>{ p.fields.push(["فیلد جدید",""]); renderFields(); });
+  document.getElementById('deleteProjectBtn').addEventListener('click', ()=>{
+    if(confirm(`پروژهٔ «${p.title}» حذف بشه؟`)){
+      state.projects = state.projects.filter(x=>x.id!==p.id);
+      closeDetail();
+      toast('پروژه حذف شد');
+    }
+  });
+
+  const zone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+  zone.addEventListener('click', ()=>fileInput.click());
+  fileInput.addEventListener('change', e=>handleFiles(e.target.files));
+  ['dragover','dragenter'].forEach(ev=>zone.addEventListener(ev, e=>{ e.preventDefault(); zone.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev=>zone.addEventListener(ev, e=>{ e.preventDefault(); zone.classList.remove('drag'); }));
+  zone.addEventListener('drop', e=>{ handleFiles(e.dataTransfer.files); });
+}
+
+function renderFields(){
+  const p = getProject();
+  const wrap = document.getElementById('fieldsWrap');
+  wrap.innerHTML = "";
+  p.fields.forEach((f,i)=>{
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.innerHTML = `
+      <input type="text" class="fname" value="${escAttr(f[0])}" placeholder="نام فیلد">
+      <input type="text" class="fval" value="${escAttr(f[1])}" placeholder="مقدار / لینک">
+      <button class="rm" title="حذف فیلد">×</button>
+    `;
+    row.querySelector('.fname').addEventListener('input', e=>{ f[0]=e.target.value; });
+    row.querySelector('.fval').addEventListener('input', e=>{ f[1]=e.target.value; });
+    row.querySelector('.rm').addEventListener('click', ()=>{ p.fields.splice(i,1); renderFields(); });
+    wrap.appendChild(row);
+  });
+}
+
+function renderGallery(){
+  const p = getProject();
+  const wrap = document.getElementById('galleryWrap');
+  wrap.innerHTML = "";
+  p.images.forEach((f,i)=>{
+    const thumb = document.createElement('div');
+    if(f.type && f.type.startsWith('image/')){
+      thumb.className = 'thumb';
+      thumb.innerHTML = `<img src="${f.data}" alt="${escAttr(f.name)}"><button class="del">×</button>`;
+    } else {
+      thumb.className = 'thumb file';
+      thumb.innerHTML = `<div>📄</div><div>${esc(shorten(f.name))}</div><button class="del">×</button>`;
+    }
+    thumb.querySelector('.del').addEventListener('click', ()=>{ p.images.splice(i,1); renderGallery(); renderGrid(); });
+    wrap.appendChild(thumb);
+  });
+}
+
+function handleFiles(fileList){
+  const p = getProject();
+  [...fileList].forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      p.images.push({ name:file.name, type:file.type, data:e.target.result });
+      renderGallery();
+    };
+    reader.readAsDataURL(file);
+  });
+  toast('فایل اضافه شد');
+}
+
+/* ---------------- export / import JSON ---------------- */
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `project-board-${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('فایل پشتیبان ذخیره شد');
+});
+
+document.getElementById('btnImport').addEventListener('click', ()=>document.getElementById('fileImport').click());
+document.getElementById('fileImport').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(data && Array.isArray(data.projects)){
+        state = data;
+        renderGrid();
+        toast('پشتیبان با موفقیت بازیابی شد');
+      } else {
+        toast('فایل معتبر نیست');
+      }
+    }catch(err){
+      toast('خطا در خواندن فایل');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+/* ---------------- helpers ---------------- */
+function esc(s){ return (s||"").toString().replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'
